@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对战模拟器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        accent: '#f59e0b',
+                        danger: '#ef4444',
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .dropdown-up {
+                position: absolute;
+                bottom: 100%;
+                top: auto;
+                margin-top: 0;
+                margin-bottom: 4px;
+            }
+            .dropdown-left {
+                left: auto;
+                right: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">对战模拟器</h1>
+        
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 左侧：我方精灵信息 -->
+            <div class="w-full lg:w-[28.57%] bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">我方精灵</h2>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">宠物选择</h3>
+                    <div class="flex gap-2">
+                        <button type="button" id="my-pet-filter-btn" class="flex-1 bg-primary text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-colors">
+                            选择宠物
+                        </button>
+                    </div>
+                    <div id="my-pet-info" class="mt-4 p-3 bg-gray-50 rounded-md hidden">
+                        <h4 class="font-medium text-gray-700"></h4>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <div>属性1: <span id="my-attr1"></span></div>
+                            <div>属性2: <span id="my-attr2"></span></div>
+                            <div>HP: <span id="my-hp"></span></div>
+                            <div>攻击: <span id="my-atk"></span></div>
+                            <div>防御: <span id="my-def"></span></div>
+                            <div>特攻: <span id="my-spa"></span></div>
+                            <div>特防: <span id="my-spd"></span></div>
+                            <div>速度: <span id="my-spe"></span></div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h5 class="font-medium text-gray-700 mb-2">计算后属性</h5>
+                            <div id="my-attributes" class="hidden"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">技能选择</h3>
+                    <div id="my-skills" class="space-y-2"></div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">修正系统</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">增益修正</label>
+                            <select id="my-boost" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="0">无</option>
+                                <option value="0.2">HP</option>
+                                <option value="0.2">攻击</option>
+                                <option value="0.2">防御</option>
+                                <option value="0.2">特攻</option>
+                                <option value="0.2">特防</option>
+                                <option value="0.2">速度</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">减益修正</label>
+                            <select id="my-reduction" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="0">无</option>
+                                <option value="-0.1">HP</option>
+                                <option value="-0.1">攻击</option>
+                                <option value="-0.1">防御</option>
+                                <option value="-0.1">特攻</option>
+                                <option value="-0.1">特防</option>
+                                <option value="-0.1">速度</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">个体值选择</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <select id="my-iv-attr1" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="hp">HP</option>
+                                        <option value="atk">攻击</option>
+                                        <option value="def">防御</option>
+                                        <option value="spa">特攻</option>
+                                        <option value="spd">特防</option>
+                                        <option value="spe">速度</option>
+                                    </select>
+                                    <div class="w-20">
+                                        <div class="relative">
+                                            <button type="button" class="w-full p-1 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center justify-between" onclick="toggleIvDropdown('my-iv-dropdown1')">
+                                                <span id="my-iv-value1">0</span>
+                                                <span class="text-xs">▼</span>
+                                            </button>
+                                            <div id="my-iv-dropdown1" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-md mt-1 hidden">
+                                                <div class="max-h-40 overflow-y-auto" id="my-iv-dropdown1-content">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <select id="my-iv-attr2" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="atk">攻击</option>
+                                        <option value="def">防御</option>
+                                        <option value="spa">特攻</option>
+                                        <option value="spd">特防</option>
+                                        <option value="spe">速度</option>
+                                        <option value="hp">HP</option>
+                                    </select>
+                                    <div class="w-20">
+                                        <div class="relative">
+                                            <button type="button" class="w-full p-1 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center justify-between" onclick="toggleIvDropdown('my-iv-dropdown2')">
+                                                <span id="my-iv-value2">0</span>
+                                                <span class="text-xs">▼</span>
+                                            </button>
+                                            <div id="my-iv-dropdown2" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-md mt-1 hidden">
+                                                <div class="max-h-40 overflow-y-auto" id="my-iv-dropdown2-content">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <select id="my-iv-attr3" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="def">防御</option>
+                                        <option value="spa">特攻</option>
+                                        <option value="spd">特防</option>
+                                        <option value="spe">速度</option>
+                                        <option value="hp">HP</option>
+                                        <option value="atk">攻击</option>
+                                    </select>
+                                    <div class="w-20">
+                                        <div class="relative">
+                                            <button type="button" class="w-full p-1 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center justify-between" onclick="toggleIvDropdown('my-iv-dropdown3')">
+                                                <span id="my-iv-value3">0</span>
+                                                <span class="text-xs">▼</span>
+                                            </button>
+                                            <div id="my-iv-dropdown3" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-md mt-1 hidden">
+                                                <div class="max-h-40 overflow-y-auto" id="my-iv-dropdown3-content">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 中间：战斗计算和结果显示 -->
+            <div class="w-full lg:w-[42.86%] bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">战斗计算</h2>
+                
+                <div class="space-y-4 mb-6">
+                    <!-- 战斗参数设置 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">应对倍率</label>
+                            <input type="number" id="response-multiplier" min="0" step="0.1" value="1" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">威力加成</label>
+                            <input type="number" id="power-bonus" min="0" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">威力提升数值</label>
+                            <input type="number" id="power-boost" min="0" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">减伤</label>
+                            <input type="number" id="damage-reduction" min="0" max="1" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">天气影响</label>
+                            <input type="number" id="weather-effect" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                    </div>
+                    
+                    <!-- 能力等级设置 -->
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-600 mb-2">能力等级</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">我方攻击提升</label>
+                                <input type="number" id="my-attack-boost" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">敌方防御降低</label>
+                                <input type="number" id="enemy-defense-reduction" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">我方攻击降低</label>
+                                <input type="number" id="my-attack-reduction" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">敌方防御提升</label>
+                                <input type="number" id="enemy-defense-boost" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-center mb-6">
+                    <button id="calculate-btn" class="bg-primary text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors">计算伤害</button>
+                </div>
+                
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">计算结果</h2>
+                
+                <div id="result" class="p-4 bg-gray-50 rounded-md hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">我方攻击敌方</h3>
+                            <div class="space-y-2">
+                                <div>技能: <span id="my-skill-name"></span></div>
+                                <div>伤害: <span id="my-damage" class="font-bold text-primary"></span></div>
+                                <div>需要攻击次数: <span id="my-hit-count" class="font-bold text-primary"></span></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-medium text-gray-700 mb-2">敌方攻击我方</h3>
+                            <div class="space-y-2">
+                                <div>技能: <span id="enemy-skill-name"></span></div>
+                                <div>伤害: <span id="enemy-damage" class="font-bold text-danger"></span></div>
+                                <div>需要攻击次数: <span id="enemy-hit-count" class="font-bold text-danger"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：敌方精灵信息 -->
+            <div class="w-full lg:w-[28.57%] bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">敌方精灵</h2>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">宠物选择</h3>
+                    <div class="flex gap-2">
+                        <button type="button" id="enemy-pet-filter-btn" class="flex-1 bg-danger text-white px-3 py-2 rounded-md hover:bg-red-600 transition-colors">
+                            选择宠物
+                        </button>
+                    </div>
+                    <div id="enemy-pet-info" class="mt-4 p-3 bg-gray-50 rounded-md hidden">
+                        <h4 class="font-medium text-gray-700"></h4>
+                        <div class="grid grid-cols-2 gap-2 mt-2">
+                            <div>属性1: <span id="enemy-attr1"></span></div>
+                            <div>属性2: <span id="enemy-attr2"></span></div>
+                            <div>HP: <span id="enemy-hp"></span></div>
+                            <div>攻击: <span id="enemy-atk"></span></div>
+                            <div>防御: <span id="enemy-def"></span></div>
+                            <div>特攻: <span id="enemy-spa"></span></div>
+                            <div>特防: <span id="enemy-spd"></span></div>
+                            <div>速度: <span id="enemy-spe"></span></div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h5 class="font-medium text-gray-700 mb-2">计算后属性</h5>
+                            <div id="enemy-attributes" class="hidden"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">技能选择</h3>
+                    <div id="enemy-skills" class="space-y-2"></div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">修正系统</h3>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">增益修正</label>
+                            <select id="enemy-boost" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="0">无</option>
+                                <option value="0.2">HP</option>
+                                <option value="0.2">攻击</option>
+                                <option value="0.2">防御</option>
+                                <option value="0.2">特攻</option>
+                                <option value="0.2">特防</option>
+                                <option value="0.2">速度</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">减益修正</label>
+                            <select id="enemy-reduction" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="0">无</option>
+                                <option value="-0.1">HP</option>
+                                <option value="-0.1">攻击</option>
+                                <option value="-0.1">防御</option>
+                                <option value="-0.1">特攻</option>
+                                <option value="-0.1">特防</option>
+                                <option value="-0.1">速度</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">个体值选择</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <select id="enemy-iv-attr1" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="hp">HP</option>
+                                        <option value="atk">攻击</option>
+                                        <option value="def">防御</option>
+                                        <option value="spa">特攻</option>
+                                        <option value="spd">特防</option>
+                                        <option value="spe">速度</option>
+                                    </select>
+                                    <div class="w-20">
+                                        <div class="relative">
+                                            <button type="button" class="w-full p-1 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center justify-between" onclick="toggleIvDropdown('enemy-iv-dropdown1')">
+                                                <span id="enemy-iv-value1">0</span>
+                                                <span class="text-xs">▼</span>
+                                            </button>
+                                            <div id="enemy-iv-dropdown1" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-md mt-1 hidden">
+                                                <div class="max-h-40 overflow-y-auto" id="enemy-iv-dropdown1-content">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <select id="enemy-iv-attr2" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="atk">攻击</option>
+                                        <option value="def">防御</option>
+                                        <option value="spa">特攻</option>
+                                        <option value="spd">特防</option>
+                                        <option value="spe">速度</option>
+                                        <option value="hp">HP</option>
+                                    </select>
+                                    <div class="w-20">
+                                        <div class="relative">
+                                            <button type="button" class="w-full p-1 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center justify-between" onclick="toggleIvDropdown('enemy-iv-dropdown2')">
+                                                <span id="enemy-iv-value2">0</span>
+                                                <span class="text-xs">▼</span>
+                                            </button>
+                                            <div id="enemy-iv-dropdown2" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-md mt-1 hidden">
+                                                <div class="max-h-40 overflow-y-auto" id="enemy-iv-dropdown2-content">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <select id="enemy-iv-attr3" class="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                        <option value="def">防御</option>
+                                        <option value="spa">特攻</option>
+                                        <option value="spd">特防</option>
+                                        <option value="spe">速度</option>
+                                        <option value="hp">HP</option>
+                                        <option value="atk">攻击</option>
+                                    </select>
+                                    <div class="w-20">
+                                        <div class="relative">
+                                            <button type="button" class="w-full p-1 border border-gray-300 rounded-md hover:bg-gray-100 flex items-center justify-between" onclick="toggleIvDropdown('enemy-iv-dropdown3')">
+                                                <span id="enemy-iv-value3">0</span>
+                                                <span class="text-xs">▼</span>
+                                            </button>
+                                            <div id="enemy-iv-dropdown3" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-md mt-1 hidden">
+                                                <div class="max-h-40 overflow-y-auto" id="enemy-iv-dropdown3-content">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 属性映射
+        const attrMap = {
+            "1": "普通系",
+            "2": "草系",
+            "3": "火系",
+            "4": "水系",
+            "5": "光系",
+            "6": "地系",
+            "7": "冰系",
+            "8": "龙系",
+            "9": "电系",
+            "10": "毒系",
+            "11": "虫系",
+            "12": "武系",
+            "13": "翼系",
+            "14": "萌系",
+            "15": "幽系",
+            "16": "恶系",
+            "17": "机械系",
+            "18": "幻系"
+        };
+        
+        // 克制倍率数据
+        const multiplierData = {
+            "1": { "1":1.0, "2":1.0, "3":1.0, "4":1.0, "5":1.0, "6":0.5, "7":1.0, "8":1.0, "9":1.0, "10":1.0, "11":1.0, "12":1.0, "13":1.0, "14":1.0, "15":0.5, "16":1.0, "17":0.5, "18":1.0 },
+            "2": { "1":1.0, "2":1.0, "3":0.5, "4":2.0, "5":2.0, "6":2.0, "7":1.0, "8":0.5, "9":1.0, "10":0.5, "11":0.5, "12":1.0, "13":0.5, "14":1.0, "15":1.0, "16":1.0, "17":0.5, "18":1.0 },
+            "3": { "1":1.0, "2":2.0, "3":1.0, "4":0.5, "5":1.0, "6":0.5, "7":2.0, "8":0.5, "9":1.0, "10":1.0, "11":2.0, "12":1.0, "13":1.0, "14":1.0, "15":1.0, "16":1.0, "17":2.0, "18":1.0 },
+            "4": { "1":1.0, "2":0.5, "3":2.0, "4":1.0, "5":1.0, "6":2.0, "7":0.5, "8":0.5, "9":1.0, "10":1.0, "11":1.0, "12":1.0, "13":1.0, "14":1.0, "15":1.0, "16":1.0, "17":2.0, "18":1.0 },
+            "5": { "1":1.0, "2":0.5, "3":1.0, "4":1.0, "5":1.0, "6":1.0, "7":0.5, "8":1.0, "9":1.0, "10":1.0, "11":1.0, "12":1.0, "13":1.0, "14":1.0, "15":2.0, "16":2.0, "17":1.0, "18":1.0 },
+            "6": { "1":1.0, "2":0.5, "3":2.0, "4":1.0, "5":1.0, "6":1.0, "7":2.0, "8":1.0, "9":2.0, "10":2.0, "11":1.0, "12":0.5, "13":1.0, "14":1.0, "15":1.0, "16":1.0, "17":1.0, "18":1.0 },
+            "7": { "1":1.0, "2":2.0, "3":0.5, "4":1.0, "5":1.0, "6":2.0, "7":0.5, "8":2.0, "9":1.0, "10":1.0, "11":1.0, "12":1.0, "13":2.0, "14":1.0, "15":1.0, "16":1.0, "17":0.5, "18":1.0 },
+            "8": { "1":1.0, "2":1.0, "3":1.0, "4":1.0, "5":1.0, "6":1.0, "7":1.0, "8":2.0, "9":1.0, "10":1.0, "11":1.0, "12":1.0, "13":1.0, "14":1.0, "15":1.0, "16":1.0, "17":0.5, "18":1.0 },
+            "9": { "1":1.0, "2":0.5, "3":1.0, "4":2.0, "5":1.0, "6":0.5, "7":1.0, "8":0.5, "9":0.5, "10":1.0, "11":1.0, "12":1.0, "13":2.0, "14":1.0, "15":1.0, "16":1.0, "17":0.5, "18":1.0 },
+            "10":{ "1":1.0, "2":2.0, "3":1.0, "4":1.0, "5":1.0, "6":0.5, "7":1.0, "8":1.0, "9":1.0, "10":0.5, "11":1.0, "12":1.0, "13":1.0, "14":2.0, "15":0.5, "16":1.0, "17":0.5, "18":1.0 },
+            "11":{ "1":1.0, "2":2.0, "3":0.5, "4":1.0, "5":1.0, "6":1.0, "7":1.0, "8":1.0, "9":1.0, "10":0.5, "11":1.0, "12":0.5, "13":0.5, "14":0.5, "15":0.5, "16":2.0, "17":0.5, "18":2.0 },
+            "12":{ "1":2.0, "2":1.0, "3":1.0, "4":1.0, "5":1.0, "6":2.0, "7":2.0, "8":1.0, "9":1.0, "10":0.5, "11":0.5, "12":1.0, "13":0.5, "14":0.5, "15":0.5, "16":2.0, "17":2.0, "18":0.5 },
+            "13":{ "1":1.0, "2":2.0, "3":1.0, "4":1.0, "5":1.0, "6":0.5, "7":1.0, "8":0.5, "9":0.5, "10":1.0, "11":2.0, "12":2.0, "13":1.0, "14":1.0, "15":1.0, "16":1.0, "17":0.5, "18":1.0 },
+            "14":{ "1":1.0, "2":1.0, "3":0.5, "4":1.0, "5":1.0, "6":1.0, "7":1.0, "8":2.0, "9":1.0, "10":0.5, "11":1.0, "12":2.0, "13":1.0, "14":1.0, "15":1.0, "16":2.0, "17":0.5, "18":1.0 },
+            "15":{ "1":0.5, "2":1.0, "3":1.0, "4":1.0, "5":2.0, "6":1.0, "7":1.0, "8":1.0, "9":1.0, "10":1.0, "11":1.0, "12":1.0, "13":1.0, "14":1.0, "15":2.0, "16":0.5, "17":1.0, "18":2.0 },
+            "16":{ "1":1.0, "2":1.0, "3":1.0, "4":1.0, "5":0.5, "6":1.0, "7":1.0, "8":1.0, "9":1.0, "10":2.0, "11":1.0, "12":0.5, "13":1.0, "14":2.0, "15":2.0, "16":0.5, "17":1.0, "18":1.0 },
+            "17":{ "1":1.0, "2":1.0, "3":0.5, "4":0.5, "5":1.0, "6":2.0, "7":2.0, "8":1.0, "9":0.5, "10":1.0, "11":1.0, "12":1.0, "13":1.0, "14":2.0, "15":1.0, "16":1.0, "17":0.5, "18":1.0 },
+            "18":{ "1":1.0, "2":1.0, "3":1.0, "4":1.0, "5":0.5, "6":1.0, "7":1.0, "8":1.0, "9":1.0, "10":2.0, "11":1.0, "12":2.0, "13":1.0, "14":1.0, "15":1.0, "16":1.0, "17":0.5, "18":0.5 }
+        };
+        
+        // 全局变量
+        let myPet = null;
+        let enemyPet = null;
+        let mySkills = [];
+        let enemySkills = [];
+        let mySelectedSkill = null;
+        let enemySelectedSkill = null;
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            generateIvDropdownOptions();
+        });
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 计算按钮
+            document.getElementById('calculate-btn').addEventListener('click', calculateDamage);
+            
+            // 实时计算事件监听器
+            // 我方个体值相关
+            document.getElementById('my-iv-attr1').addEventListener('change', function() { updateIvAttributeOptions(); calculateRealTimeAttributes(); });
+            document.getElementById('my-iv-attr2').addEventListener('change', function() { updateIvAttributeOptions(); calculateRealTimeAttributes(); });
+            document.getElementById('my-iv-attr3').addEventListener('change', function() { updateIvAttributeOptions(); calculateRealTimeAttributes(); });
+            document.getElementById('my-iv-value1').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('my-iv-value2').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('my-iv-value3').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('my-boost').addEventListener('change', function() { updateBoostReductionOptions('my'); calculateRealTimeAttributes(); });
+            document.getElementById('my-reduction').addEventListener('change', function() { updateBoostReductionOptions('my'); calculateRealTimeAttributes(); });
+            
+            // 敌方个体值相关
+            document.getElementById('enemy-iv-attr1').addEventListener('change', function() { updateIvAttributeOptions(); calculateRealTimeAttributes(); });
+            document.getElementById('enemy-iv-attr2').addEventListener('change', function() { updateIvAttributeOptions(); calculateRealTimeAttributes(); });
+            document.getElementById('enemy-iv-attr3').addEventListener('change', function() { updateIvAttributeOptions(); calculateRealTimeAttributes(); });
+            document.getElementById('enemy-iv-value1').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('enemy-iv-value2').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('enemy-iv-value3').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('enemy-boost').addEventListener('change', function() { updateBoostReductionOptions('enemy'); calculateRealTimeAttributes(); });
+            document.getElementById('enemy-reduction').addEventListener('change', function() { updateBoostReductionOptions('enemy'); calculateRealTimeAttributes(); });
+            
+            // 初始化互斥逻辑
+            updateIvAttributeOptions();
+            updateBoostReductionOptions('my');
+            updateBoostReductionOptions('enemy');
+        }
+        
+        // 加载宠物技能
+        function loadPetSkills(petId, side) {
+            fetch(`/api/skills/${petId}`)
+                .then(response => response.json())
+                .then(skills => {
+                    if (side === 'my') {
+                        mySkills = skills;
+                    } else {
+                        enemySkills = skills;
+                    }
+                    
+                    const skillsDiv = document.getElementById(`${side}-skills`);
+                    skillsDiv.innerHTML = '';
+                    
+                    skills.forEach(skill => {
+                        // 计算弱点倍率
+                        let multiplier = 1;
+                        if ((side === 'my' && enemyPet) || (side === 'enemy' && myPet)) {
+                            const attackAttr = skill.attr_id;
+                            const defendPet = side === 'my' ? enemyPet : myPet;
+                            const defendAttr1 = defendPet.attr1;
+                            const defendAttr2 = defendPet.attr2;
+                            
+                            if (defendAttr2) {
+                                // 双属性
+                                const m1 = getMultiplier(attackAttr, defendAttr1);
+                                const m2 = getMultiplier(attackAttr, defendAttr2);
+                                
+                                if (m1 === 2.0 && m2 === 2.0) {
+                                    multiplier = 3.0;
+                                } else if (m1 === 0.5 && m2 === 0.5) {
+                                    multiplier = 1 / 3;
+                                } else {
+                                    multiplier = m1 * m2;
+                                }
+                            } else {
+                                // 单属性
+                                multiplier = getMultiplier(attackAttr, defendAttr1);
+                            }
+                        }
+                        
+                        // 获取箭头图标
+                        const arrowIcon = getWeaknessArrow(multiplier);
+                        
+                        const skillDiv = document.createElement('div');
+                        skillDiv.className = 'p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer';
+                        skillDiv.innerHTML = `
+                            <div class="font-medium">${skill.name}</div>
+                            <div class="text-sm text-gray-600">威力: ${skill.power} | 属性: ${attrMap[skill.attr_id]} ${arrowIcon}</div>
+                            <div class="text-xs text-gray-500">${skill.desc}</div>
+                            ${skill.can_hit === 1 ? `<div class="mt-2">
+                                <label class="block text-xs font-medium text-gray-700 mb-1">额外连击次数</label>
+                                <input type="number" class="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" min="0" value="0" data-skill-id="${skill.skill_id}">
+                            </div>` : ''}
+                        `;
+                        skillDiv.addEventListener('click', function() {
+                            if (side === 'my') {
+                                mySelectedSkill = skill;
+                            } else {
+                                enemySelectedSkill = skill;
+                            }
+                            // 高亮选中的技能
+                            const skillDivs = skillsDiv.querySelectorAll('div');
+                            skillDivs.forEach(div => div.classList.remove('bg-blue-50', 'border-blue-300'));
+                            skillDiv.classList.add('bg-blue-50', 'border-blue-300');
+                        });
+                        
+                        // 为额外连击输入字段添加验证
+                        if (skill.can_hit === 1) {
+                            const comboInput = skillDiv.querySelector('input[data-skill-id]');
+                            if (comboInput) {
+                                comboInput.addEventListener('input', function() {
+                                    validateComboInput(this);
+                                });
+                            }
+                        }
+                        
+                        skillsDiv.appendChild(skillDiv);
+                    });
+                });
+        }
+        
+        // 计算伤害
+        async function calculateDamage() {
+            if (!myPet || !enemyPet || !mySelectedSkill || !enemySelectedSkill) {
+                alert('请选择宠物和技能');
+                return;
+            }
+            
+            // 获取修正值
+            const myIv = getIvObject('my');
+            const myBoost = parseFloat(document.getElementById('my-boost').value) || 0;
+            const enemyIv = getIvObject('enemy');
+            const enemyBoost = parseFloat(document.getElementById('enemy-boost').value) || 0;
+            
+            // 计算属性
+            const myAttrs = calculatePetAttributes(myPet.race, myIv, myBoost);
+            const enemyAttrs = calculatePetAttributes(enemyPet.race, enemyIv, enemyBoost);
+            
+            // 显示计算后的属性
+            displayAttributes('my', myAttrs);
+            displayAttributes('enemy', enemyAttrs);
+            
+            // 获取战斗参数
+            const responseMultiplier = parseFloat(document.getElementById('response-multiplier').value) || 1;
+            const powerBonus = parseInt(document.getElementById('power-bonus').value) || 0;
+            const powerBoost = parseInt(document.getElementById('power-boost').value) || 0;
+            const damageReduction = parseFloat(document.getElementById('damage-reduction').value) || 0;
+            const weatherEffect = parseFloat(document.getElementById('weather-effect').value) || 0;
+            
+            // 计算能力等级
+            const myAttackBoost = parseFloat(document.getElementById('my-attack-boost').value) || 0;
+            const enemyDefenseReduction = parseFloat(document.getElementById('enemy-defense-reduction').value) || 0;
+            const myAttackReduction = parseFloat(document.getElementById('my-attack-reduction').value) || 0;
+            const enemyDefenseBoost = parseFloat(document.getElementById('enemy-defense-boost').value) || 0;
+            const abilityLevel = (1 + myAttackBoost + enemyDefenseReduction) / (1 + myAttackReduction + enemyDefenseBoost);
+            
+            // 计算克制关系
+            const myWeakness = await calculateWeakness(mySelectedSkill.attr_id, enemyPet.attr1, enemyPet.attr2);
+            const enemyWeakness = await calculateWeakness(enemySelectedSkill.attr_id, myPet.attr1, myPet.attr2);
+            
+            // 获取额外连击次数
+            let myExtraCombo = 0;
+            let enemyExtraCombo = 0;
+            
+            if (mySelectedSkill.can_hit === 1) {
+                const myComboInput = document.querySelector(`#my-skills input[data-skill-id="${mySelectedSkill.skill_id}"]`);
+                if (myComboInput) {
+                    myExtraCombo = parseInt(myComboInput.value) || 0;
+                }
+            }
+            
+            if (enemySelectedSkill.can_hit === 1) {
+                const enemyComboInput = document.querySelector(`#enemy-skills input[data-skill-id="${enemySelectedSkill.skill_id}"]`);
+                if (enemyComboInput) {
+                    enemyExtraCombo = parseInt(enemyComboInput.value) || 0;
+                }
+            }
+            
+            // 计算伤害
+            let myDamage = await calculateBattleDamage(
+                myAttrs.atk,
+                enemyAttrs.def,
+                mySelectedSkill.power,
+                myWeakness,
+                responseMultiplier,
+                powerBonus,
+                abilityLevel,
+                powerBoost,
+                damageReduction,
+                weatherEffect
+            );
+            
+            let enemyDamage = await calculateBattleDamage(
+                enemyAttrs.atk,
+                myAttrs.def,
+                enemySelectedSkill.power,
+                enemyWeakness,
+                responseMultiplier,
+                powerBonus,
+                abilityLevel,
+                powerBoost,
+                damageReduction,
+                weatherEffect
+            );
+            
+            // 应用额外连击次数
+            if (mySelectedSkill.can_hit === 1) {
+                myDamage = myDamage * (mySelectedSkill.hit_count + myExtraCombo);
+            }
+            
+            if (enemySelectedSkill.can_hit === 1) {
+                enemyDamage = enemyDamage * (enemySelectedSkill.hit_count + enemyExtraCombo);
+            }
+            
+            // 计算需要的攻击次数
+            const myHitCount = Math.ceil(enemyAttrs.hp / myDamage);
+            const enemyHitCount = Math.ceil(myAttrs.hp / enemyDamage);
+            
+            // 显示结果
+            document.getElementById('my-skill-name').textContent = mySelectedSkill.name;
+            document.getElementById('my-damage').textContent = myDamage;
+            document.getElementById('my-hit-count').textContent = myHitCount;
+            document.getElementById('enemy-skill-name').textContent = enemySelectedSkill.name;
+            document.getElementById('enemy-damage').textContent = enemyDamage;
+            document.getElementById('enemy-hit-count').textContent = enemyHitCount;
+            document.getElementById('result').classList.remove('hidden');
+        }
+        
+        // 显示计算后的属性
+        function displayAttributes(side, attrs) {
+            const attrDiv = document.getElementById(`${side}-attributes`);
+            if (attrDiv) {
+                attrDiv.innerHTML = `
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div>HP: <span class="font-medium">${attrs.hp}</span></div>
+                        <div>攻击: <span class="font-medium">${attrs.atk}</span></div>
+                        <div>防御: <span class="font-medium">${attrs.def}</span></div>
+                        <div>特攻: <span class="font-medium">${attrs.spa}</span></div>
+                        <div>特防: <span class="font-medium">${attrs.spd}</span></div>
+                        <div>速度: <span class="font-medium">${attrs.spe}</span></div>
+                    </div>
+                `;
+                attrDiv.classList.remove('hidden');
+            }
+        }
+        
+        // 计算宠物属性
+        function calculatePetAttributes(race, ivs, boost) {
+            const attrs = {};
+            attrs.hp = Math.ceil((1.7 * race.hp + (ivs.hp || 0) * 0.85 * 6 + 70) * (1 + boost) + 100);
+            attrs.atk = Math.ceil((1.1 * race.atk + (ivs.atk || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
+            attrs.def = Math.ceil((1.1 * race.def + (ivs.def || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
+            attrs.spa = Math.ceil((1.1 * race.spa + (ivs.spa || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
+            attrs.spd = Math.ceil((1.1 * race.spd + (ivs.spd || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
+            attrs.spe = Math.ceil((1.1 * race.spe + (ivs.spe || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
+            return attrs;
+        }
+        
+        // 计算克制关系
+        function calculateWeakness(attackAttr, defendAttr1, defendAttr2) {
+            return new Promise((resolve) => {
+                fetch('/api/calculate/weakness', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        attack_attr: attackAttr.toString(),
+                        defend_attr1: defendAttr1.toString(),
+                        defend_attr2: defendAttr2 ? defendAttr2.toString() : '0'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resolve(data.multiplier);
+                });
+            });
+        }
+        
+        // 计算战斗伤害
+        function calculateBattleDamage(attackerAtk, defenderDef, skillPower, weaknessMultiplier, responseMultiplier, powerBonus, abilityLevel, powerBoost, damageReduction, weatherEffect) {
+            return new Promise((resolve) => {
+                fetch('/api/calculate/damage', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        attacker_atk: attackerAtk,
+                        defender_def: defenderDef,
+                        skill_power: skillPower,
+                        weakness_multiplier: weaknessMultiplier,
+                        response_multiplier: responseMultiplier,
+                        power_bonus: powerBonus,
+                        ability_level: abilityLevel,
+                        power_boost: powerBoost,
+                        damage_reduction: damageReduction,
+                        weather_effect: weatherEffect
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    resolve(data.damage);
+                });
+            });
+        }
+        
+        // 生成个体值下拉菜单选项
+        function generateIvDropdownOptions() {
+            const dropdowns = [
+                'my-iv-dropdown1', 'my-iv-dropdown2', 'my-iv-dropdown3',
+                'enemy-iv-dropdown1', 'enemy-iv-dropdown2', 'enemy-iv-dropdown3'
+            ];
+            
+            dropdowns.forEach(dropdownId => {
+                const contentId = dropdownId + '-content';
+                const content = document.getElementById(contentId);
+                if (content) {
+                    content.innerHTML = '';
+                    for (let i = 0; i <= 10; i++) {
+                        const div = document.createElement('div');
+                        div.className = 'p-1 hover:bg-gray-100 cursor-pointer text-center';
+                        div.textContent = i;
+                        div.onclick = function() {
+                            const valueId = dropdownId.replace('dropdown', 'value');
+                            selectIvValue(valueId, i, dropdownId);
+                        };
+                        content.appendChild(div);
+                    }
+                }
+            });
+        }
+        
+        // 切换个体值下拉菜单（带智能定位）
+        function toggleIvDropdown(dropdownId) {
+            // 关闭所有其他下拉菜单
+            const allDropdowns = document.querySelectorAll('[id$="-dropdown1"], [id$="-dropdown2"], [id$="-dropdown3"]');
+            allDropdowns.forEach(dropdown => {
+                if (dropdown.id !== dropdownId) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+            
+            // 切换当前下拉菜单
+            const dropdown = document.getElementById(dropdownId);
+            const isHidden = dropdown.classList.contains('hidden');
+            
+            if (isHidden) {
+                // 计算智能定位
+                const button = dropdown.previousElementSibling;
+                const buttonRect = button.getBoundingClientRect();
+                const dropdownHeight = 260; // 约11项 * 高度 + padding
+                const viewportHeight = window.innerHeight;
+                const viewportWidth = window.innerWidth;
+                
+                // 重置所有定位类
+                dropdown.classList.remove('dropdown-up', 'dropdown-left');
+                dropdown.style.left = '';
+                dropdown.style.right = '';
+                
+                // 下方空间不足，向上展开
+                if (buttonRect.bottom + dropdownHeight > viewportHeight - 20) {
+                    dropdown.classList.add('dropdown-up');
+                }
+                
+                // 右侧空间不足，向左对齐
+                if (buttonRect.left + dropdown.offsetWidth > viewportWidth - 20) {
+                    dropdown.classList.add('dropdown-left');
+                }
+            }
+            
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // 选择个体值
+        function selectIvValue(valueId, value, dropdownId) {
+            document.getElementById(valueId).textContent = value;
+            document.getElementById(dropdownId).classList.add('hidden');
+            updateIvAttributeOptions();
+            calculateRealTimeAttributes();
+        }
+        
+        // 验证额外连击输入
+        function validateComboInput(input) {
+            let value = parseInt(input.value);
+            if (isNaN(value)) {
+                value = 0;
+            } else if (value < 0) {
+                value = 0;
+            }
+            input.value = value;
+        }
+        
+        // 获取属性克制倍率
+        function getMultiplier(attackAttr, defendAttr) {
+            // 转换为字符串以匹配属性映射
+            attackAttr = String(attackAttr);
+            defendAttr = String(defendAttr);
+            
+            if (multiplierData && multiplierData[attackAttr] && multiplierData[attackAttr][defendAttr]) {
+                return multiplierData[attackAttr][defendAttr];
+            }
+            return 1.0;
+        }
+        
+        // 更新个体值属性选项（互斥逻辑）
+        function updateIvAttributeOptions() {
+            const sides = ['my', 'enemy'];
+            sides.forEach(side => {
+                const currentSelects = [
+                    document.getElementById(`${side}-iv-attr1`),
+                    document.getElementById(`${side}-iv-attr2`),
+                    document.getElementById(`${side}-iv-attr3`)
+                ];
+                
+                // 获取当前选中的值
+                const selectedValues = currentSelects.map(select => select.value);
+                
+                // 获取所有已选择的属性
+                const usedValues = selectedValues.filter(v => v !== null && v !== undefined);
+                
+                // 更新每个选择器的选项
+                currentSelects.forEach((currentSelect, currentIndex) => {
+                    const options = currentSelect.options;
+                    const currentValue = currentSelect.value;
+                    
+                    // 遍历所有选项
+                    for (let i = 0; i < options.length; i++) {
+                        const optionValue = options[i].value;
+                        
+                        // 检查该选项是否被其他选择器使用
+                        const isUsedByOther = usedValues.some((selected, idx) => 
+                            idx !== currentIndex && selected === optionValue
+                        );
+                        
+                        // 如果被其他选择器使用且不是当前选择器的值，则禁用
+                        options[i].disabled = isUsedByOther && optionValue !== currentValue;
+                    }
+                });
+            });
+        }
+        
+        // 更新增益/减益选项（互斥逻辑）
+        function updateBoostReductionOptions(side) {
+            const boostSelect = document.getElementById(`${side}-boost`);
+            const reductionSelect = document.getElementById(`${side}-reduction`);
+            
+            const boostValue = boostSelect.value;
+            const reductionValue = reductionSelect.value;
+            
+            // 遍历reduction选项
+            for (let i = 0; i < reductionSelect.options.length; i++) {
+                const optionValue = reductionSelect.options[i].value;
+                // 如果boost选择了某个属性（非"无"），则在reduction中禁用该属性
+                if (optionValue !== "0" && optionValue === boostValue) {
+                    reductionSelect.options[i].disabled = true;
+                } else {
+                    reductionSelect.options[i].disabled = false;
+                }
+            }
+            
+            // 遍历boost选项
+            for (let i = 0; i < boostSelect.options.length; i++) {
+                const optionValue = boostSelect.options[i].value;
+                // 如果reduction选择了某个属性（非"无"），则在boost中禁用该属性
+                if (optionValue !== "0" && optionValue === reductionValue) {
+                    boostSelect.options[i].disabled = true;
+                } else {
+                    boostSelect.options[i].disabled = false;
+                }
+            }
+        }
+        
+        // 获取个体值对象
+        function getIvObject(side) {
+            const ivs = {};
+            for (let i = 1; i <= 3; i++) {
+                const attr = document.getElementById(`${side}-iv-attr${i}`).value;
+                const value = parseInt(document.getElementById(`${side}-iv-value${i}`).textContent) || 0;
+                ivs[attr] = (ivs[attr] || 0) + value;
+            }
+            return ivs;
+        }
+        
+        // 实时计算属性
+        function calculateRealTimeAttributes() {
+            // 计算我方属性
+            if (myPet) {
+                const myIv = getIvObject('my');
+                const myBoost = parseFloat(document.getElementById('my-boost').value) || 0;
+                const myAttrs = calculatePetAttributes(myPet.race, myIv, myBoost);
+                displayAttributes('my', myAttrs);
+            }
+            
+            // 计算敌方属性
+            if (enemyPet) {
+                const enemyIv = getIvObject('enemy');
+                const enemyBoost = parseFloat(document.getElementById('enemy-boost').value) || 0;
+                const enemyAttrs = calculatePetAttributes(enemyPet.race, enemyIv, enemyBoost);
+                displayAttributes('enemy', enemyAttrs);
+            }
+        }
+        
+        // 点击外部关闭下拉菜单
+        document.addEventListener('click', function(event) {
+            const allDropdowns = document.querySelectorAll('[id$="-dropdown1"], [id$="-dropdown2"], [id$="-dropdown3"]');
+            const allButtons = document.querySelectorAll('[onclick^="toggleIvDropdown"]');
+            
+            let clickedInside = false;
+            allButtons.forEach(button => {
+                if (button.contains(event.target)) {
+                    clickedInside = true;
+                }
+            });
+            
+            allDropdowns.forEach(dropdown => {
+                if (dropdown.contains(event.target)) {
+                    clickedInside = true;
+                }
+            });
+            
+            if (!clickedInside) {
+                allDropdowns.forEach(dropdown => {
+                    dropdown.classList.add('hidden');
+                });
+            }
+        });
+        
+        // 宠物过滤功能
+        let currentFilterSide = '';
+        let allPets = [];
+        let filteredPets = [];
+        let currentPage = 1;
+        const petsPerPage = 50;
+        
+        // 加载所有宠物数据
+        function loadAllPets() {
+            return new Promise((resolve) => {
+                fetch('/api/pets')
+                    .then(response => response.json())
+                    .then(data => {
+                        allPets = data;
+                        filteredPets = data;
+                        resolve(data);
+                    });
+            });
+        }
+        
+        // 生成属性过滤选项
+        function generateAttrFilterOptions() {
+            const container = document.getElementById('attr-filter-container');
+            if (container) {
+                container.innerHTML = '';
+                Object.entries(attrMap).forEach(([id, name]) => {
+                    const button = document.createElement('button');
+                    button.className = 'attr-filter-btn px-3 py-2 border border-gray-300 rounded-md hover:bg-gray-100 transition-colors';
+                    button.textContent = name;
+                    button.dataset.value = id;
+                    button.addEventListener('click', function() {
+                        this.classList.toggle('bg-primary');
+                        this.classList.toggle('text-white');
+                        this.classList.toggle('border-primary');
+                        applyFilter();
+                    });
+                    container.appendChild(button);
+                });
+            }
+        }
+        
+        // 打开过滤模态框
+        function openFilterModal(side) {
+            currentFilterSide = side;
+            document.getElementById('filter-side-label').textContent = side === 'my' ? '我方' : '敌方';
+            currentPage = 1;
+            applyFilter();
+            document.getElementById('pet-filter-modal').classList.remove('hidden');
+        }
+        
+        // 关闭过滤模态框
+        function closeFilterModal() {
+            document.getElementById('pet-filter-modal').classList.add('hidden');
+        }
+        
+        // 应用过滤
+        function applyFilter() {
+            // 获取选择的属性
+            const selectedAttrs = [];
+            document.querySelectorAll('.attr-filter-btn.bg-primary').forEach(button => {
+                selectedAttrs.push(button.dataset.value);
+            });
+            
+            // 获取属性值过滤条件
+            const statFilters = [];
+            const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+            stats.forEach(stat => {
+                const value = parseInt(document.getElementById(`filter-${stat}-value`).value) || 0;
+                const operator = document.getElementById(`filter-${stat}-operator`).value;
+                statFilters.push({ stat, value, operator });
+            });
+            
+            // 过滤宠物
+            filteredPets = allPets.filter(pet => {
+                // 检查属性过滤
+                if (selectedAttrs.length > 0) {
+                    const petAttrs = [String(pet.attr1)];
+                    if (pet.attr2) {
+                        petAttrs.push(String(pet.attr2));
+                    }
+                    // 所有选择的属性都必须在宠物属性中
+                    const hasAllAttrs = selectedAttrs.every(attr => petAttrs.includes(attr));
+                    if (!hasAllAttrs) {
+                        return false;
+                    }
+                }
+                
+                // 检查属性值过滤
+                for (const filter of statFilters) {
+                    // 只有当值大于0时才进行过滤
+                    if (filter.value > 0) {
+                        const petValue = pet.race[filter.stat];
+                        switch (filter.operator) {
+                            case 'gte':
+                                if (petValue < filter.value) return false;
+                                break;
+                            case 'lte':
+                                if (petValue > filter.value) return false;
+                                break;
+                            case 'eq':
+                                if (petValue !== filter.value) return false;
+                                break;
+                        }
+                    }
+                }
+                
+                return true;
+            });
+            
+            // 重置到第一页
+            currentPage = 1;
+            
+            // 更新宠物列表显示
+            updatePetFilterList();
+        }
+        
+        // 更新宠物列表显示
+        function updatePetFilterList() {
+            const listContainer = document.getElementById('pet-filter-list');
+            const resultCount = document.getElementById('filter-result-count');
+            const currentPageSpan = document.getElementById('filter-current-page');
+            const totalPagesSpan = document.getElementById('filter-total-pages');
+            const prevBtn = document.getElementById('filter-prev-btn');
+            const nextBtn = document.getElementById('filter-next-btn');
+            
+            // 更新结果数量
+            resultCount.textContent = filteredPets.length;
+            
+            // 计算总页数
+            const totalPages = Math.ceil(filteredPets.length / petsPerPage);
+            totalPagesSpan.textContent = totalPages || 1;
+            currentPageSpan.textContent = currentPage;
+            
+            // 更新分页按钮状态
+            prevBtn.disabled = currentPage <= 1;
+            nextBtn.disabled = currentPage >= totalPages;
+            
+            // 清空列表
+            listContainer.innerHTML = '';
+            
+            if (filteredPets.length === 0) {
+                listContainer.innerHTML = '<div class="p-4 text-center text-gray-500">没有符合条件的宠物</div>';
+                return;
+            }
+            
+            // 计算当前页的宠物范围
+            const startIndex = (currentPage - 1) * petsPerPage;
+            const endIndex = Math.min(startIndex + petsPerPage, filteredPets.length);
+            const currentPets = filteredPets.slice(startIndex, endIndex);
+            
+            // 添加宠物到列表
+            currentPets.forEach(pet => {
+                const petDiv = document.createElement('div');
+                petDiv.className = 'p-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center';
+                petDiv.innerHTML = `
+                    <div>
+                        <div class="font-medium">${pet.name}</div>
+                        <div class="text-sm text-gray-500">
+                            ${attrMap[pet.attr1]}${pet.attr2 ? ' / ' + attrMap[pet.attr2] : ''} | 
+                            HP:${pet.race.hp} ATK:${pet.race.atk} DEF:${pet.race.def} SPA:${pet.race.spa} SPD:${pet.race.spd} SPE:${pet.race.spe}
+                        </div>
+                    </div>
+                    <div class="text-primary">选择</div>
+                `;
+                petDiv.addEventListener('click', function() {
+                    selectPet(pet, currentFilterSide);
+                    closeFilterModal();
+                });
+                listContainer.appendChild(petDiv);
+            });
+        }
+        
+        // 获取弱点箭头图标
+        function getWeaknessArrow(multiplier) {
+            if (multiplier === 0.25) {
+                return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>';
+            } else if (multiplier === 0.5) {
+                return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>';
+            } else if (multiplier === 2) {
+                return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>';
+            } else if (multiplier === 3) {
+                return '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg><svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mx-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>';
+            }
+            return '';
+        }
+        
+        // 选择宠物
+        function selectPet(pet, side) {
+            if (side === 'my') {
+                myPet = pet;
+                loadPetSkills(pet.pet_id, 'my');
+                // 重新加载敌方技能以更新箭头
+                if (enemyPet) {
+                    loadPetSkills(enemyPet.pet_id, 'enemy');
+                }
+            } else {
+                enemyPet = pet;
+                loadPetSkills(pet.pet_id, 'enemy');
+                // 重新加载我方技能以更新箭头
+                if (myPet) {
+                    loadPetSkills(myPet.pet_id, 'my');
+                }
+            }
+            loadPetInfo(pet, side);
+        }
+        
+        // 加载宠物信息
+        function loadPetInfo(pet, side) {
+            const infoDiv = document.getElementById(`${side}-pet-info`);
+            const nameElement = infoDiv.querySelector('h4');
+            const attr1Element = document.getElementById(`${side}-attr1`);
+            const attr2Element = document.getElementById(`${side}-attr2`);
+            const hpElement = document.getElementById(`${side}-hp`);
+            const atkElement = document.getElementById(`${side}-atk`);
+            const defElement = document.getElementById(`${side}-def`);
+            const spaElement = document.getElementById(`${side}-spa`);
+            const spdElement = document.getElementById(`${side}-spd`);
+            const speElement = document.getElementById(`${side}-spe`);
+            
+            nameElement.textContent = pet.name;
+            attr1Element.textContent = attrMap[pet.attr1];
+            attr2Element.textContent = pet.attr2 ? attrMap[pet.attr2] : '无';
+            hpElement.textContent = pet.race.hp;
+            atkElement.textContent = pet.race.atk;
+            defElement.textContent = pet.race.def;
+            spaElement.textContent = pet.race.spa;
+            spdElement.textContent = pet.race.spd;
+            speElement.textContent = pet.race.spe;
+            
+            infoDiv.classList.remove('hidden');
+        }
+        
+        // 清除所有过滤
+        function clearAllFilters() {
+            // 清除属性过滤
+            document.querySelectorAll('.attr-filter-btn').forEach(button => {
+                button.classList.remove('bg-primary', 'text-white', 'border-primary');
+            });
+            
+            // 清除属性值过滤
+            const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+            stats.forEach(stat => {
+                document.getElementById(`filter-${stat}-value`).value = 0;
+                document.getElementById(`filter-${stat}-operator`).value = 'gte';
+            });
+            
+            // 应用过滤
+            applyFilter();
+        }
+        
+        // 设置事件监听器
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载所有宠物数据
+            loadAllPets();
+            
+            // 生成属性过滤选项
+            generateAttrFilterOptions();
+            
+            // 我方宠物过滤按钮
+            document.getElementById('my-pet-filter-btn').addEventListener('click', function() {
+                openFilterModal('my');
+            });
+            
+            // 敌方宠物过滤按钮
+            document.getElementById('enemy-pet-filter-btn').addEventListener('click', function() {
+                openFilterModal('enemy');
+            });
+            
+            // 清除所有过滤按钮
+            document.getElementById('clear-filter-btn').addEventListener('click', clearAllFilters);
+            
+            // 关闭模态框按钮
+            document.getElementById('close-filter-modal').addEventListener('click', closeFilterModal);
+            
+            // 点击模态框外部关闭
+            document.getElementById('pet-filter-modal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeFilterModal();
+                }
+            });
+            
+            // 分页按钮
+            document.getElementById('filter-prev-btn').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updatePetFilterList();
+                }
+            });
+            
+            document.getElementById('filter-next-btn').addEventListener('click', function() {
+                const totalPages = Math.ceil(filteredPets.length / petsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updatePetFilterList();
+                }
+            });
+            
+            // 属性值过滤实时更新
+            const stats = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+            stats.forEach(stat => {
+                // 数值输入框
+                const valueInput = document.getElementById(`filter-${stat}-value`);
+                if (valueInput) {
+                    valueInput.addEventListener('input', applyFilter);
+                }
+                // 运算符选择器
+                const operatorSelect = document.getElementById(`filter-${stat}-operator`);
+                if (operatorSelect) {
+                    operatorSelect.addEventListener('change', applyFilter);
+                }
+            });
+        });
+    </script>
+    
+    <!-- 宠物过滤模态框 -->
+    <div id="pet-filter-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">宠物过滤 - <span id="filter-side-label"></span></h3>
+                <button type="button" id="close-filter-modal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- 属性过滤 -->
+            <div class="mb-4">
+                <h4 class="text-lg font-medium text-gray-700 mb-2">系别选择</h4>
+                <div class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 gap-2" id="attr-filter-container">
+                </div>
+            </div>
+            
+            <!-- 属性值过滤 -->
+            <div class="mb-4">
+                <h4 class="text-lg font-medium text-gray-700 mb-2">属性值过滤</h4>
+                <div class="flex flex-wrap gap-4">
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-sm font-medium text-gray-700">HP</label>
+                        <input type="number" id="filter-hp-value" min="0" value="0" class="w-16 p-1 border border-gray-300 rounded-md text-center">
+                        <select id="filter-hp-operator" class="w-24 p-1 border border-gray-300 rounded-md text-xs">
+                            <option value="gte">≥</option>
+                            <option value="lte">≤</option>
+                            <option value="eq">=</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-sm font-medium text-gray-700">ATK</label>
+                        <input type="number" id="filter-atk-value" min="0" value="0" class="w-16 p-1 border border-gray-300 rounded-md text-center">
+                        <select id="filter-atk-operator" class="w-24 p-1 border border-gray-300 rounded-md text-xs">
+                            <option value="gte">≥</option>
+                            <option value="lte">≤</option>
+                            <option value="eq">=</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-sm font-medium text-gray-700">DEF</label>
+                        <input type="number" id="filter-def-value" min="0" value="0" class="w-16 p-1 border border-gray-300 rounded-md text-center">
+                        <select id="filter-def-operator" class="w-24 p-1 border border-gray-300 rounded-md text-xs">
+                            <option value="gte">≥</option>
+                            <option value="lte">≤</option>
+                            <option value="eq">=</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-sm font-medium text-gray-700">SPA</label>
+                        <input type="number" id="filter-spa-value" min="0" value="0" class="w-16 p-1 border border-gray-300 rounded-md text-center">
+                        <select id="filter-spa-operator" class="w-24 p-1 border border-gray-300 rounded-md text-xs">
+                            <option value="gte">≥</option>
+                            <option value="lte">≤</option>
+                            <option value="eq">=</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-sm font-medium text-gray-700">SPD</label>
+                        <input type="number" id="filter-spd-value" min="0" value="0" class="w-16 p-1 border border-gray-300 rounded-md text-center">
+                        <select id="filter-spd-operator" class="w-24 p-1 border border-gray-300 rounded-md text-xs">
+                            <option value="gte">≥</option>
+                            <option value="lte">≤</option>
+                            <option value="eq">=</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col items-center gap-1">
+                        <label class="text-sm font-medium text-gray-700">SPE</label>
+                        <input type="number" id="filter-spe-value" min="0" value="0" class="w-16 p-1 border border-gray-300 rounded-md text-center">
+                        <select id="filter-spe-operator" class="w-24 p-1 border border-gray-300 rounded-md text-xs">
+                            <option value="gte">≥</option>
+                            <option value="lte">≤</option>
+                            <option value="eq">=</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 按钮区域 -->
+            <div class="flex justify-between items-center mb-4">
+                <div class="text-sm text-gray-600">
+                    共 <span id="filter-result-count">0</span> 个宠物
+                </div>
+                <button type="button" id="clear-filter-btn" class="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100">
+                    清除所有
+                </button>
+            </div>
+            
+            <!-- 宠物列表 -->
+            <div class="flex-1 overflow-y-auto border border-gray-200 rounded-md">
+                <div id="pet-filter-list" class="divide-y divide-gray-200">
+                </div>
+            </div>
+            
+            <!-- 分页 -->
+            <div class="flex justify-center items-center gap-2 mt-4">
+                <button type="button" id="filter-prev-btn" class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                    上一页
+                </button>
+                <span class="text-sm text-gray-600">
+                    第 <span id="filter-current-page">1</span> / <span id="filter-total-pages">1</span> 页
+                </span>
+                <button type="button" id="filter-next-btn" class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
+                    下一页
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
