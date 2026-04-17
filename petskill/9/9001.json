@@ -1,0 +1,11 @@
+{
+  "skill_id": 9001,
+  "name": "球状闪电",
+  "type_id": 1,
+  "cost": 1,
+  "power": 60,
+  "can_hit": 0,
+  "hit_count": 1,
+  "attr_id": 9,
+  "desc": "对敌方精灵造成物理伤害"
+}

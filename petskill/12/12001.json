@@ -1,0 +1,11 @@
+{
+  "skill_id": 12001,
+  "name": "缠丝劲",
+  "type_id": 1,
+  "cost": 1,
+  "power": 25,
+  "can_hit": 1,
+  "hit_count": 2,
+  "attr_id": 12,
+  "desc": "对敌方精灵造成物理伤害"
+}
