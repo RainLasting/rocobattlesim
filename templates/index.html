@@ -81,8 +81,13 @@
                 </div>
                 
                 <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-600 mb-2">技能选择</h3>
-                    <div id="my-skills" class="space-y-2"></div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-medium text-gray-600">技能选择</h3>
+                        <button type="button" id="my-reselect-skills" class="text-sm text-primary hover:underline">
+                            重新选择
+                        </button>
+                    </div>
+                    <div id="my-skills"></div>
                 </div>
                 
                 <div>
@@ -299,8 +304,13 @@
                 </div>
                 
                 <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-600 mb-2">技能选择</h3>
-                    <div id="enemy-skills" class="space-y-2"></div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-lg font-medium text-gray-600">技能选择</h3>
+                        <button type="button" id="enemy-reselect-skills" class="text-sm text-primary hover:underline">
+                            重新选择
+                        </button>
+                    </div>
+                    <div id="enemy-skills"></div>
                 </div>
                 
                 <div>
@@ -460,10 +470,187 @@
         let mySelectedSkill = null;
         let enemySelectedSkill = null;
         
+        // 技能配置相关变量
+        let currentSkillConfigPet = null;
+        let currentSkillConfigSide = '';
+        let selectedSkills = [];
+        let allSkills = [];
+        
+        // 打开技能配置模态框
+        function openSkillConfigModal(pet, side) {
+            currentSkillConfigPet = pet;
+            currentSkillConfigSide = side;
+            selectedSkills = [];
+            
+            // 加载宠物技能
+            loadAllSkillsForConfig(pet.pet_id);
+            
+            // 设置模态框标题
+            document.getElementById('skill-config-side').textContent = side === 'my' ? '我方' : '敌方';
+            
+            // 显示模态框
+            document.getElementById('skill-config-modal').classList.remove('hidden');
+        }
+        
+        // 关闭技能配置模态框
+        function closeSkillConfigModal() {
+            document.getElementById('skill-config-modal').classList.add('hidden');
+        }
+        
+        // 加载宠物所有技能
+        function loadAllSkillsForConfig(petId) {
+            fetch(`/api/skills/${petId}`)
+                .then(response => response.json())
+                .then(skills => {
+                    allSkills = skills;
+                    filterAndDisplaySkills();
+                    updateSelectedSkillsDisplay();
+                });
+        }
+        
+        // 筛选并显示技能
+        function filterAndDisplaySkills() {
+            const typeFilter = document.getElementById('skill-type-filter').value;
+            const powerFilter = parseInt(document.getElementById('skill-power-filter').value);
+            
+            // 筛选技能
+            const filteredSkills = allSkills.filter(skill => {
+                // 类型筛选
+                if (typeFilter !== '0' && String(skill.type_id) !== typeFilter) {
+                    return false;
+                }
+                // 威力筛选
+                if (skill.power > powerFilter) {
+                    return false;
+                }
+                return true;
+            });
+            
+            // 显示技能
+            const container = document.getElementById('skill-list-container');
+            container.innerHTML = '';
+            
+            filteredSkills.forEach(skill => {
+                const isSelected = selectedSkills.some(s => s.skill_id === skill.skill_id);
+                const isDisabled = selectedSkills.length >= 4 && !isSelected;
+                
+                const skillCard = document.createElement('div');
+                skillCard.className = `p-3 border rounded-md transition-all duration-200 ${isSelected ? 'bg-blue-50 border-blue-300' : 'border-gray-200 hover:bg-gray-50'} ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`;
+                
+                skillCard.innerHTML = `
+                    <div class="font-medium">${skill.name}</div>
+                    <div class="text-sm text-gray-600">类型: ${skillTypes[skill.type_id]} | 威力: ${skill.power}</div>
+                    <div class="text-sm text-gray-600">属性: ${attrMap[skill.attr_id]}</div>
+                    <div class="text-xs text-gray-500 mt-1">${skill.desc}</div>
+                    ${isSelected ? '<div class="mt-2 text-xs text-blue-600 font-medium">已选择</div>' : ''}
+                `;
+                
+                if (!isDisabled) {
+                    skillCard.addEventListener('click', function() {
+                        toggleSkillSelection(skill);
+                    });
+                }
+                
+                container.appendChild(skillCard);
+            });
+        }
+        
+        // 切换技能选择状态
+        function toggleSkillSelection(skill) {
+            const index = selectedSkills.findIndex(s => s.skill_id === skill.skill_id);
+            
+            if (index > -1) {
+                // 取消选择
+                selectedSkills.splice(index, 1);
+            } else {
+                // 选择技能（最多4个）
+                if (selectedSkills.length < 4) {
+                    selectedSkills.push(skill);
+                }
+            }
+            
+            // 更新显示
+            filterAndDisplaySkills();
+            updateSelectedSkillsDisplay();
+        }
+        
+        // 更新已选技能显示
+        function updateSelectedSkillsDisplay() {
+            const container = document.getElementById('selected-skills-container');
+            container.innerHTML = '';
+            
+            if (selectedSkills.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-gray-500 py-4">还未选择技能</div>';
+                return;
+            }
+            
+            selectedSkills.forEach(skill => {
+                const skillCard = document.createElement('div');
+                skillCard.className = 'p-3 border border-blue-200 bg-blue-50 rounded-md relative';
+                
+                skillCard.innerHTML = `
+                    <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    <div class="font-medium">${skill.name}</div>
+                    <div class="text-sm text-gray-600">类型: ${skillTypes[skill.type_id]}</div>
+                    <div class="text-sm text-gray-600">威力: ${skill.power}</div>
+                `;
+                
+                // 添加取消选择事件
+                const removeBtn = skillCard.querySelector('button');
+                removeBtn.addEventListener('click', function() {
+                    toggleSkillSelection(skill);
+                });
+                
+                container.appendChild(skillCard);
+            });
+        }
+        
+        // 确认技能选择
+        function confirmSkillSelection() {
+            if (selectedSkills.length === 0) {
+                alert('请至少选择一个技能');
+                return;
+            }
+            
+            // 加载选中的技能
+            if (currentSkillConfigSide === 'my') {
+                mySkills = selectedSkills;
+                loadPetSkills(currentSkillConfigPet.pet_id, 'my');
+            } else {
+                enemySkills = selectedSkills;
+                loadPetSkills(currentSkillConfigPet.pet_id, 'enemy');
+            }
+            
+            // 关闭模态框
+            closeSkillConfigModal();
+        }
+        
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             setupEventListeners();
             generateIvDropdownOptions();
+            
+            // 技能配置模态框事件
+            document.getElementById('close-skill-config-modal').addEventListener('click', closeSkillConfigModal);
+            document.getElementById('confirm-skills-btn').addEventListener('click', confirmSkillSelection);
+            
+            // 技能筛选事件
+            document.getElementById('skill-type-filter').addEventListener('change', filterAndDisplaySkills);
+            document.getElementById('skill-power-filter').addEventListener('input', function() {
+                document.getElementById('power-range-value').textContent = `0-${this.value}`;
+                filterAndDisplaySkills();
+            });
+            
+            // 点击模态框外部关闭
+            document.getElementById('skill-config-modal').addEventListener('click', function(event) {
+                if (event.target === this) {
+                    closeSkillConfigModal();
+                }
+            });
         });
         
         // 设置事件监听器
@@ -492,6 +679,19 @@
             document.getElementById('enemy-boost').addEventListener('change', function() { updateBoostReductionOptions('enemy'); calculateRealTimeAttributes(); });
             document.getElementById('enemy-reduction').addEventListener('change', function() { updateBoostReductionOptions('enemy'); calculateRealTimeAttributes(); });
             
+            // 技能重新选择按钮
+            document.getElementById('my-reselect-skills').addEventListener('click', function() {
+                if (myPet) {
+                    openSkillConfigModal(myPet, 'my');
+                }
+            });
+            
+            document.getElementById('enemy-reselect-skills').addEventListener('click', function() {
+                if (enemyPet) {
+                    openSkillConfigModal(enemyPet, 'enemy');
+                }
+            });
+            
             // 初始化互斥逻辑
             updateIvAttributeOptions();
             updateBoostReductionOptions('my');
@@ -500,84 +700,79 @@
         
         // 加载宠物技能
         function loadPetSkills(petId, side) {
-            fetch(`/api/skills/${petId}`)
-                .then(response => response.json())
-                .then(skills => {
-                    if (side === 'my') {
-                        mySkills = skills;
+            const skills = side === 'my' ? mySkills : enemySkills;
+            
+            const skillsDiv = document.getElementById(`${side}-skills`);
+            skillsDiv.innerHTML = '';
+            
+            // 设置2x2网格布局
+            skillsDiv.className = 'grid grid-cols-1 sm:grid-cols-2 gap-3';
+            
+            skills.forEach(skill => {
+                // 计算弱点倍率
+                let multiplier = 1;
+                if ((side === 'my' && enemyPet) || (side === 'enemy' && myPet)) {
+                    const attackAttr = skill.attr_id;
+                    const defendPet = side === 'my' ? enemyPet : myPet;
+                    const defendAttr1 = defendPet.attr1;
+                    const defendAttr2 = defendPet.attr2;
+                    
+                    if (defendAttr2) {
+                        // 双属性
+                        const m1 = getMultiplier(attackAttr, defendAttr1);
+                        const m2 = getMultiplier(attackAttr, defendAttr2);
+                        
+                        if (m1 === 2.0 && m2 === 2.0) {
+                            multiplier = 3.0;
+                        } else if (m1 === 0.5 && m2 === 0.5) {
+                            multiplier = 1 / 3;
+                        } else {
+                            multiplier = m1 * m2;
+                        }
                     } else {
-                        enemySkills = skills;
+                        // 单属性
+                        multiplier = getMultiplier(attackAttr, defendAttr1);
                     }
-                    
-                    const skillsDiv = document.getElementById(`${side}-skills`);
-                    skillsDiv.innerHTML = '';
-                    
-                    skills.forEach(skill => {
-                        // 计算弱点倍率
-                        let multiplier = 1;
-                        if ((side === 'my' && enemyPet) || (side === 'enemy' && myPet)) {
-                            const attackAttr = skill.attr_id;
-                            const defendPet = side === 'my' ? enemyPet : myPet;
-                            const defendAttr1 = defendPet.attr1;
-                            const defendAttr2 = defendPet.attr2;
-                            
-                            if (defendAttr2) {
-                                // 双属性
-                                const m1 = getMultiplier(attackAttr, defendAttr1);
-                                const m2 = getMultiplier(attackAttr, defendAttr2);
-                                
-                                if (m1 === 2.0 && m2 === 2.0) {
-                                    multiplier = 3.0;
-                                } else if (m1 === 0.5 && m2 === 0.5) {
-                                    multiplier = 1 / 3;
-                                } else {
-                                    multiplier = m1 * m2;
-                                }
-                            } else {
-                                // 单属性
-                                multiplier = getMultiplier(attackAttr, defendAttr1);
-                            }
-                        }
-                        
-                        // 获取箭头图标
-                        const arrowIcon = getWeaknessArrow(multiplier);
-                        
-                        const skillDiv = document.createElement('div');
-                        skillDiv.className = 'p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer';
-                        skillDiv.innerHTML = `
-                            <div class="font-medium">${skill.name}</div>
-                            <div class="text-sm text-gray-600">威力: ${skill.power} | 属性: ${attrMap[skill.attr_id]} ${arrowIcon}</div>
-                            <div class="text-xs text-gray-500">${skill.desc}</div>
-                            ${skill.can_hit === 1 ? `<div class="mt-2">
-                                <label class="block text-xs font-medium text-gray-700 mb-1">额外连击次数</label>
-                                <input type="number" class="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" min="0" value="0" data-skill-id="${skill.skill_id}">
-                            </div>` : ''}
-                        `;
-                        skillDiv.addEventListener('click', function() {
-                            if (side === 'my') {
-                                mySelectedSkill = skill;
-                            } else {
-                                enemySelectedSkill = skill;
-                            }
-                            // 高亮选中的技能
-                            const skillDivs = skillsDiv.querySelectorAll('div');
-                            skillDivs.forEach(div => div.classList.remove('bg-blue-50', 'border-blue-300'));
-                            skillDiv.classList.add('bg-blue-50', 'border-blue-300');
-                        });
-                        
-                        // 为额外连击输入字段添加验证
-                        if (skill.can_hit === 1) {
-                            const comboInput = skillDiv.querySelector('input[data-skill-id]');
-                            if (comboInput) {
-                                comboInput.addEventListener('input', function() {
-                                    validateComboInput(this);
-                                });
-                            }
-                        }
-                        
-                        skillsDiv.appendChild(skillDiv);
-                    });
+                }
+                
+                // 获取箭头图标
+                const arrowIcon = getWeaknessArrow(multiplier);
+                
+                const skillDiv = document.createElement('div');
+                skillDiv.className = 'p-2 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer';
+                skillDiv.innerHTML = `
+                    <div class="font-medium">${skill.name}</div>
+                    <div class="text-sm text-gray-600">威力: ${skill.power} | 属性: ${attrMap[skill.attr_id]} ${arrowIcon}</div>
+                    <div class="text-xs text-gray-500">${skill.desc}</div>
+                    ${skill.can_hit === 1 ? `<div class="mt-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-1">额外连击次数</label>
+                        <input type="number" class="w-full p-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary" min="0" value="0" data-skill-id="${skill.skill_id}">
+                    </div>` : ''}
+                `;
+                skillDiv.addEventListener('click', function() {
+                    if (side === 'my') {
+                        mySelectedSkill = skill;
+                    } else {
+                        enemySelectedSkill = skill;
+                    }
+                    // 高亮选中的技能
+                    const skillDivs = skillsDiv.querySelectorAll('div');
+                    skillDivs.forEach(div => div.classList.remove('bg-blue-50', 'border-blue-300'));
+                    skillDiv.classList.add('bg-blue-50', 'border-blue-300');
                 });
+                
+                // 为额外连击输入字段添加验证
+                if (skill.can_hit === 1) {
+                    const comboInput = skillDiv.querySelector('input[data-skill-id]');
+                    if (comboInput) {
+                        comboInput.addEventListener('input', function() {
+                            validateComboInput(this);
+                        });
+                    }
+                }
+                
+                skillsDiv.appendChild(skillDiv);
+            });
         }
         
         // 计算伤害
@@ -1173,18 +1368,26 @@
             return '';
         }
         
+        // 技能类型映射
+        const skillTypes = {
+            "1": "物攻",
+            "2": "魔攻",
+            "3": "防御",
+            "4": "状态"
+        };
+        
         // 选择宠物
         function selectPet(pet, side) {
             if (side === 'my') {
                 myPet = pet;
-                loadPetSkills(pet.pet_id, 'my');
+                openSkillConfigModal(pet, 'my');
                 // 重新加载敌方技能以更新箭头
                 if (enemyPet) {
                     loadPetSkills(enemyPet.pet_id, 'enemy');
                 }
             } else {
                 enemyPet = pet;
-                loadPetSkills(pet.pet_id, 'enemy');
+                openSkillConfigModal(pet, 'enemy');
                 // 重新加载我方技能以更新箭头
                 if (myPet) {
                     loadPetSkills(myPet.pet_id, 'my');
@@ -1408,6 +1611,64 @@
                 <button type="button" id="filter-next-btn" class="px-3 py-1 border border-gray-300 rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed">
                     下一页
                 </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 技能配置模态框 -->
+    <div id="skill-config-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold text-gray-800">技能配置 - <span id="skill-config-side"></span></h3>
+                <div class="flex gap-2">
+                    <button type="button" id="confirm-skills-btn" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-600 transition-colors">
+                        确认选择
+                    </button>
+                    <button type="button" id="close-skill-config-modal" class="text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 已选技能区域 -->
+            <div class="mb-4">
+                <h4 class="text-lg font-medium text-gray-700 mb-2">已选技能 (最多4个)</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3" id="selected-skills-container">
+                    <!-- 已选技能将在这里显示 -->
+                </div>
+            </div>
+            
+            <!-- 筛选区域 -->
+            <div class="mb-4 p-4 bg-gray-50 rounded-md">
+                <h4 class="text-lg font-medium text-gray-700 mb-3">技能筛选</h4>
+                <div class="flex flex-wrap gap-6">
+                    <!-- 技能类型筛选 -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">技能类型</label>
+                        <select id="skill-type-filter" class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="0">全部类型</option>
+                            <option value="1">物攻</option>
+                            <option value="2">魔攻</option>
+                            <option value="3">防御</option>
+                            <option value="4">状态</option>
+                        </select>
+                    </div>
+                    
+                    <!-- 技能威力筛选 -->
+                    <div class="flex-1 min-w-[200px]">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">威力值范围: <span id="power-range-value">0-100</span></label>
+                        <input type="range" id="skill-power-filter" min="0" max="100" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 技能列表区域 -->
+            <div class="flex-1 overflow-y-auto border border-gray-200 rounded-md">
+                <div id="skill-list-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4">
+                    <!-- 技能卡片将在这里显示 -->
+                </div>
             </div>
         </div>
     </div>

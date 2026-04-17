@@ -1,0 +1,11 @@
+{
+  "skill_id": 3001,
+  "name": "火焰箭",
+  "type_id": 1,
+  "cost": 2,
+  "power": 80,
+  "can_hit": 0,
+  "hit_count": 1,
+  "attr_id": 3,
+  "desc": "对敌方精灵造成物理伤害"
+}

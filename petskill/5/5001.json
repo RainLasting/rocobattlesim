@@ -1,0 +1,11 @@
+{
+  "skill_id": 5001,
+  "name": "闪光",
+  "type_id": 2,
+  "cost": 1,
+  "power": 60,
+  "can_hit": 0,
+  "hit_count": 1,
+  "attr_id": 5,
+  "desc": "对敌方精灵造成魔法伤害"
+}
