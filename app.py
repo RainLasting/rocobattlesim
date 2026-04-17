@@ -64,11 +64,28 @@ def calculate_attributes(race, iv, boost):
     return attributes
 
 # 伤害计算
-def calculate_damage(attacker_atk, defender_def, skill_power, weakness_multiplier, response_multiplier=1, power_bonus=0, ability_level=1, power_boost=0, damage_reduction=0, weather_effect=0):
-    # 技能威力计算
-    skill_power_calc = power_boost * weakness_multiplier * (1 - damage_reduction) * (1 + weather_effect)
-    # 伤害计算公式
-    damage = math.ceil((attacker_atk / defender_def) * 0.9 * (skill_power * response_multiplier + power_bonus) * ability_level)
+def calculate_damage(attacker_atk, defender_def, defender_spd, skill_power, skill_type, weakness_multiplier, response_multiplier=1, power_bonus=0, power_boost=0, damage_reduction=0, weather_effect=0, attack_boost=0, defense_reduction=0, attack_reduction=0, defense_boost=0):
+    # 根据技能类型选择防御属性
+    # skill_type: 1=物攻(物理), 2=魔攻(魔法), 3=防御, 4=状态
+    if skill_type == 2:
+        actual_defender_def = defender_spd
+    else:
+        actual_defender_def = defender_def
+
+    # 计算能力等级
+    ability_level = calculate_ability_level(attack_boost, defense_reduction, attack_reduction, defense_boost)
+
+    # 新伤害计算公式
+    # 伤害=进攻方攻击/防御方防御*0.9*（技能威力*应对倍率+威力加成）*能力等级*（1+威力提升）*克制关系*天气影响*（1-减伤）
+    damage = math.ceil(
+        (attacker_atk / actual_defender_def) * 0.9 *
+        (skill_power * response_multiplier + power_bonus) *
+        ability_level *
+        (1 + power_boost) *
+        weakness_multiplier *
+        (1 + weather_effect) *
+        (1 - damage_reduction)
+    )
     return damage
 
 # 能力等级计算
@@ -134,19 +151,25 @@ def calculate_battle_damage():
     data = request.json
     attacker_atk = data.get("attacker_atk")
     defender_def = data.get("defender_def")
+    defender_spd = data.get("defender_spd")
     skill_power = data.get("skill_power")
+    skill_type = data.get("skill_type")
     weakness_multiplier = data.get("weakness_multiplier", 1)
     response_multiplier = data.get("response_multiplier", 1)
     power_bonus = data.get("power_bonus", 0)
-    ability_level = data.get("ability_level", 1)
     power_boost = data.get("power_boost", 0)
     damage_reduction = data.get("damage_reduction", 0)
     weather_effect = data.get("weather_effect", 0)
-    
-    if None in [attacker_atk, defender_def, skill_power]:
+    # 能力等级相关参数
+    attack_boost = data.get("attack_boost", 0)
+    defense_reduction = data.get("defense_reduction", 0)
+    attack_reduction = data.get("attack_reduction", 0)
+    defense_boost = data.get("defense_boost", 0)
+
+    if None in [attacker_atk, defender_def, defender_spd, skill_power, skill_type]:
         return jsonify({"error": "Missing required parameters"}), 400
-    
-    damage = calculate_damage(attacker_atk, defender_def, skill_power, weakness_multiplier, response_multiplier, power_bonus, ability_level, power_boost, damage_reduction, weather_effect)
+
+    damage = calculate_damage(attacker_atk, defender_def, defender_spd, skill_power, skill_type, weakness_multiplier, response_multiplier, power_bonus, power_boost, damage_reduction, weather_effect, attack_boost, defense_reduction, attack_reduction, defense_boost)
     return jsonify({"damage": damage})
 
 # 计算属性克制关系
@@ -173,4 +196,4 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5010)
+    app.run(debug=True, port=5011)

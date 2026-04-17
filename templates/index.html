@@ -97,24 +97,24 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">增益修正</label>
                             <select id="my-boost" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="0">无</option>
-                                <option value="0.2">HP</option>
-                                <option value="0.2">攻击</option>
-                                <option value="0.2">防御</option>
-                                <option value="0.2">特攻</option>
-                                <option value="0.2">特防</option>
-                                <option value="0.2">速度</option>
+                                <option value="hp">HP</option>
+                                <option value="atk">攻击</option>
+                                <option value="def">防御</option>
+                                <option value="spa">特攻</option>
+                                <option value="spd">特防</option>
+                                <option value="spe">速度</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">减益修正</label>
                             <select id="my-reduction" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="0">无</option>
-                                <option value="-0.1">HP</option>
-                                <option value="-0.1">攻击</option>
-                                <option value="-0.1">防御</option>
-                                <option value="-0.1">特攻</option>
-                                <option value="-0.1">特防</option>
-                                <option value="-0.1">速度</option>
+                                <option value="hp">HP</option>
+                                <option value="atk">攻击</option>
+                                <option value="def">防御</option>
+                                <option value="spa">特攻</option>
+                                <option value="spd">特防</option>
+                                <option value="spe">速度</option>
                             </select>
                         </div>
                         <div>
@@ -195,51 +195,118 @@
             <!-- 中间：战斗计算和结果显示 -->
             <div class="w-full lg:w-[42.86%] bg-white rounded-lg shadow-md p-6">
                 <h2 class="text-xl font-semibold text-gray-700 mb-4">战斗计算</h2>
-                
-                <div class="space-y-4 mb-6">
-                    <!-- 战斗参数设置 -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">应对倍率</label>
-                            <input type="number" id="response-multiplier" min="0" step="0.1" value="1" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">威力加成</label>
-                            <input type="number" id="power-bonus" min="0" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">威力提升数值</label>
-                            <input type="number" id="power-boost" min="0" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">减伤</label>
-                            <input type="number" id="damage-reduction" min="0" max="1" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">天气影响</label>
-                            <input type="number" id="weather-effect" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+
+                <div class="grid grid-cols-2 gap-6 mb-6">
+                    <!-- 我方战斗参数 -->
+                    <div>
+                        <h3 class="text-lg font-medium text-primary mb-3">我方参数</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">应对倍率</label>
+                                <input type="number" id="my-response-multiplier" min="0" step="0.1" value="1" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">威力加成（数值）</label>
+                                <input type="number" id="my-power-bonus" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">威力提升（百分比）</label>
+                                <input type="number" id="my-power-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">减伤</label>
+                                <input type="number" id="my-damage-reduction" min="0" max="1" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">天气影响</label>
+                                <input type="number" id="my-weather-effect" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                            </div>
                         </div>
                     </div>
-                    
-                    <!-- 能力等级设置 -->
+
+                    <!-- 敌方战斗参数 -->
                     <div>
-                        <h3 class="text-lg font-medium text-gray-600 mb-2">能力等级</h3>
-                        <div class="grid grid-cols-2 gap-4">
+                        <h3 class="text-lg font-medium text-danger mb-3">敌方参数</h3>
+                        <div class="space-y-3">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">我方攻击提升</label>
-                                <input type="number" id="my-attack-boost" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">应对倍率</label>
+                                <input type="number" id="enemy-response-multiplier" min="0" step="0.1" value="1" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">敌方防御降低</label>
-                                <input type="number" id="enemy-defense-reduction" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">威力加成（数值）</label>
+                                <input type="number" id="enemy-power-bonus" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">我方攻击降低</label>
-                                <input type="number" id="my-attack-reduction" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">威力提升（百分比）</label>
+                                <input type="number" id="enemy-power-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">敌方防御提升</label>
-                                <input type="number" id="enemy-defense-boost" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">减伤</label>
+                                <input type="number" id="enemy-damage-reduction" min="0" max="1" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">天气影响</label>
+                                <input type="number" id="enemy-weather-effect" min="0" step="0.1" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 能力等级设置 -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-600 mb-3">能力等级</h3>
+                    <div class="grid grid-cols-2 gap-6">
+                        <!-- 我方能力等级 -->
+                        <div>
+                            <h4 class="text-sm font-medium text-primary mb-2">我方能力提升</h4>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">物理攻击 (±%)</label>
+                                    <input type="number" id="my-phys-atk-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">魔法攻击 (±%)</label>
+                                    <input type="number" id="my-magic-atk-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">物理防御 (±%)</label>
+                                    <input type="number" id="my-phys-def-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">魔法防御 (±%)</label>
+                                    <input type="number" id="my-magic-def-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">速度 (±%)</label>
+                                    <input type="number" id="my-speed-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 敌方能力等级 -->
+                        <div>
+                            <h4 class="text-sm font-medium text-danger mb-2">敌方能力提升</h4>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">物理攻击 (±%)</label>
+                                    <input type="number" id="enemy-phys-atk-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">魔法攻击 (±%)</label>
+                                    <input type="number" id="enemy-magic-atk-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">物理防御 (±%)</label>
+                                    <input type="number" id="enemy-phys-def-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">魔法防御 (±%)</label>
+                                    <input type="number" id="enemy-magic-def-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-gray-600 mb-1">速度 (±%)</label>
+                                    <input type="number" id="enemy-speed-boost" step="0.01" value="0" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-danger">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -269,6 +336,9 @@
                                 <div>需要攻击次数: <span id="enemy-hit-count" class="font-bold text-danger"></span></div>
                             </div>
                         </div>
+                    </div>
+                    <div class="mt-4 flex justify-center">
+                        <button id="next-turn-btn" class="bg-accent text-white px-6 py-2 rounded-md hover:bg-amber-600 transition-colors">下一回合</button>
                     </div>
                 </div>
             </div>
@@ -320,24 +390,24 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">增益修正</label>
                             <select id="enemy-boost" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="0">无</option>
-                                <option value="0.2">HP</option>
-                                <option value="0.2">攻击</option>
-                                <option value="0.2">防御</option>
-                                <option value="0.2">特攻</option>
-                                <option value="0.2">特防</option>
-                                <option value="0.2">速度</option>
+                                <option value="hp">HP</option>
+                                <option value="atk">攻击</option>
+                                <option value="def">防御</option>
+                                <option value="spa">特攻</option>
+                                <option value="spd">特防</option>
+                                <option value="spe">速度</option>
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">减益修正</label>
                             <select id="enemy-reduction" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
                                 <option value="0">无</option>
-                                <option value="-0.1">HP</option>
-                                <option value="-0.1">攻击</option>
-                                <option value="-0.1">防御</option>
-                                <option value="-0.1">特攻</option>
-                                <option value="-0.1">特防</option>
-                                <option value="-0.1">速度</option>
+                                <option value="hp">HP</option>
+                                <option value="atk">攻击</option>
+                                <option value="def">防御</option>
+                                <option value="spa">特攻</option>
+                                <option value="spd">特防</option>
+                                <option value="spe">速度</option>
                             </select>
                         </div>
                         <div>
@@ -653,10 +723,27 @@
             });
         });
         
+        // 下一回合按钮点击事件
+        function handleNextTurn() {
+            // 获取当前伤害值
+            const myDamage = parseFloat(document.getElementById('my-damage').textContent) || 0;
+            const enemyDamage = parseFloat(document.getElementById('enemy-damage').textContent) || 0;
+            
+            // 更新血量
+            hpData.enemy.current = Math.max(0, hpData.enemy.current - myDamage);
+            hpData.my.current = Math.max(0, hpData.my.current - enemyDamage);
+            
+            // 重新计算并显示属性
+            calculateRealTimeAttributes();
+        }
+        
         // 设置事件监听器
         function setupEventListeners() {
             // 计算按钮
             document.getElementById('calculate-btn').addEventListener('click', calculateDamage);
+            
+            // 下一回合按钮
+            document.getElementById('next-turn-btn').addEventListener('click', handleNextTurn);
             
             // 实时计算事件监听器
             // 我方个体值相关
@@ -678,7 +765,21 @@
             document.getElementById('enemy-iv-value3').addEventListener('input', calculateRealTimeAttributes);
             document.getElementById('enemy-boost').addEventListener('change', function() { updateBoostReductionOptions('enemy'); calculateRealTimeAttributes(); });
             document.getElementById('enemy-reduction').addEventListener('change', function() { updateBoostReductionOptions('enemy'); calculateRealTimeAttributes(); });
-            
+
+            // 我方能力等级相关
+            document.getElementById('my-phys-atk-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('my-magic-atk-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('my-phys-def-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('my-magic-def-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('my-speed-boost').addEventListener('input', calculateRealTimeAttributes);
+
+            // 敌方能力等级相关
+            document.getElementById('enemy-phys-atk-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('enemy-magic-atk-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('enemy-phys-def-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('enemy-magic-def-boost').addEventListener('input', calculateRealTimeAttributes);
+            document.getElementById('enemy-speed-boost').addEventListener('input', calculateRealTimeAttributes);
+
             // 技能重新选择按钮
             document.getElementById('my-reselect-skills').addEventListener('click', function() {
                 if (myPet) {
@@ -783,32 +884,81 @@
             }
             
             // 获取修正值
+            // 存储基础属性（用于伤害计算）
+            let myBaseAttrs = {};
+            let enemyBaseAttrs = {};
+
             const myIv = getIvObject('my');
-            const myBoost = parseFloat(document.getElementById('my-boost').value) || 0;
+            const myBoostAttr = document.getElementById('my-boost').value;
+            const myReductionAttr = document.getElementById('my-reduction').value;
             const enemyIv = getIvObject('enemy');
-            const enemyBoost = parseFloat(document.getElementById('enemy-boost').value) || 0;
+            const enemyBoostAttr = document.getElementById('enemy-boost').value;
+            const enemyReductionAttr = document.getElementById('enemy-reduction').value;
+
+            // 计算基础属性（不包含能力等级提升）
+            myBaseAttrs = calculatePetAttributes(myPet.race, myIv, myBoostAttr, myReductionAttr);
+            enemyBaseAttrs = calculatePetAttributes(enemyPet.race, enemyIv, enemyBoostAttr, enemyReductionAttr);
+
+            // 获取能力等级百分比
+            const myPhysAtkBoost = parseFloat(document.getElementById('my-phys-atk-boost').value) || 0;
+            const myMagicAtkBoost = parseFloat(document.getElementById('my-magic-atk-boost').value) || 0;
+            const myPhysDefBoost = parseFloat(document.getElementById('my-phys-def-boost').value) || 0;
+            const myMagicDefBoost = parseFloat(document.getElementById('my-magic-def-boost').value) || 0;
+            const mySpeedBoost = parseFloat(document.getElementById('my-speed-boost').value) || 0;
+
+            const enemyPhysAtkBoost = parseFloat(document.getElementById('enemy-phys-atk-boost').value) || 0;
+            const enemyMagicAtkBoost = parseFloat(document.getElementById('enemy-magic-atk-boost').value) || 0;
+            const enemyPhysDefBoost = parseFloat(document.getElementById('enemy-phys-def-boost').value) || 0;
+            const enemyMagicDefBoost = parseFloat(document.getElementById('enemy-magic-def-boost').value) || 0;
+            const enemySpeedBoost = parseFloat(document.getElementById('enemy-speed-boost').value) || 0;
+
+            // 计算最终显示属性（应用能力等级百分比）
+            const myDisplayAttrs = {
+                hp: myBaseAttrs.hp,
+                atk: Math.ceil(myBaseAttrs.atk * (1 + myPhysAtkBoost)),
+                def: Math.ceil(myBaseAttrs.def * (1 + myPhysDefBoost)),
+                spa: Math.ceil(myBaseAttrs.spa * (1 + myMagicAtkBoost)),
+                spd: Math.ceil(myBaseAttrs.spd * (1 + myMagicDefBoost)),
+                spe: Math.ceil(myBaseAttrs.spe * (1 + mySpeedBoost))
+            };
+
+            const enemyDisplayAttrs = {
+                hp: enemyBaseAttrs.hp,
+                atk: Math.ceil(enemyBaseAttrs.atk * (1 + enemyPhysAtkBoost)),
+                def: Math.ceil(enemyBaseAttrs.def * (1 + enemyPhysDefBoost)),
+                spa: Math.ceil(enemyBaseAttrs.spa * (1 + enemyMagicAtkBoost)),
+                spd: Math.ceil(enemyBaseAttrs.spd * (1 + enemyMagicDefBoost)),
+                spe: Math.ceil(enemyBaseAttrs.spe * (1 + enemySpeedBoost))
+            };
+
+            // 显示计算后的属性（使用提升后的属性用于显示）
+            displayAttributes('my', myDisplayAttrs);
+            displayAttributes('enemy', enemyDisplayAttrs);
+
+            // 获取我方战斗参数
+            const myResponseMultiplier = parseFloat(document.getElementById('my-response-multiplier').value) || 1;
+            const myPowerBonus = parseInt(document.getElementById('my-power-bonus').value) || 0;
+            const myPowerBoost = parseFloat(document.getElementById('my-power-boost').value) || 0;
+            const myDamageReduction = parseFloat(document.getElementById('my-damage-reduction').value) || 0;
+            const myWeatherEffect = parseFloat(document.getElementById('my-weather-effect').value) || 0;
+
+            // 获取敌方战斗参数
+            const enemyResponseMultiplier = parseFloat(document.getElementById('enemy-response-multiplier').value) || 1;
+            const enemyPowerBonus = parseInt(document.getElementById('enemy-power-bonus').value) || 0;
+            const enemyPowerBoost = parseFloat(document.getElementById('enemy-power-boost').value) || 0;
+            const enemyDamageReduction = parseFloat(document.getElementById('enemy-damage-reduction').value) || 0;
+            const enemyWeatherEffect = parseFloat(document.getElementById('enemy-weather-effect').value) || 0;
             
-            // 计算属性
-            const myAttrs = calculatePetAttributes(myPet.race, myIv, myBoost);
-            const enemyAttrs = calculatePetAttributes(enemyPet.race, enemyIv, enemyBoost);
+            // 获取能力等级参数
+            const myPhysAtkBoost = parseFloat(document.getElementById('my-phys-atk-boost').value) || 0;
+            const myMagicAtkBoost = parseFloat(document.getElementById('my-magic-atk-boost').value) || 0;
+            const myPhysDefBoost = parseFloat(document.getElementById('my-phys-def-boost').value) || 0;
+            const myMagicDefBoost = parseFloat(document.getElementById('my-magic-def-boost').value) || 0;
             
-            // 显示计算后的属性
-            displayAttributes('my', myAttrs);
-            displayAttributes('enemy', enemyAttrs);
-            
-            // 获取战斗参数
-            const responseMultiplier = parseFloat(document.getElementById('response-multiplier').value) || 1;
-            const powerBonus = parseInt(document.getElementById('power-bonus').value) || 0;
-            const powerBoost = parseInt(document.getElementById('power-boost').value) || 0;
-            const damageReduction = parseFloat(document.getElementById('damage-reduction').value) || 0;
-            const weatherEffect = parseFloat(document.getElementById('weather-effect').value) || 0;
-            
-            // 计算能力等级
-            const myAttackBoost = parseFloat(document.getElementById('my-attack-boost').value) || 0;
-            const enemyDefenseReduction = parseFloat(document.getElementById('enemy-defense-reduction').value) || 0;
-            const myAttackReduction = parseFloat(document.getElementById('my-attack-reduction').value) || 0;
-            const enemyDefenseBoost = parseFloat(document.getElementById('enemy-defense-boost').value) || 0;
-            const abilityLevel = (1 + myAttackBoost + enemyDefenseReduction) / (1 + myAttackReduction + enemyDefenseBoost);
+            const enemyPhysAtkBoost = parseFloat(document.getElementById('enemy-phys-atk-boost').value) || 0;
+            const enemyMagicAtkBoost = parseFloat(document.getElementById('enemy-magic-atk-boost').value) || 0;
+            const enemyPhysDefBoost = parseFloat(document.getElementById('enemy-phys-def-boost').value) || 0;
+            const enemyMagicDefBoost = parseFloat(document.getElementById('enemy-magic-def-boost').value) || 0;
             
             // 计算克制关系
             const myWeakness = await calculateWeakness(mySelectedSkill.attr_id, enemyPet.attr1, enemyPet.attr2);
@@ -832,31 +982,63 @@
                 }
             }
             
-            // 计算伤害
+            // 计算伤害（使用基础属性进行计算）
+            // 我方攻击：使用我方攻击力、我方技能的敌方防御参数、我方战斗参数
+            // 根据技能类型选择攻击提升属性
+            let myAttackBoost = myPhysAtkBoost;
+            if (mySelectedSkill.type_id === 2) { // 魔攻
+                myAttackBoost = myMagicAtkBoost;
+            }
+            // 根据技能类型选择敌方防御提升属性
+            let enemyDefenseBoost = enemyPhysDefBoost;
+            if (mySelectedSkill.type_id === 2) { // 魔攻
+                enemyDefenseBoost = enemyMagicDefBoost;
+            }
             let myDamage = await calculateBattleDamage(
-                myAttrs.atk,
-                enemyAttrs.def,
+                myBaseAttrs.atk,
+                enemyBaseAttrs.def,
+                enemyBaseAttrs.spd,
                 mySelectedSkill.power,
+                mySelectedSkill.type_id,
                 myWeakness,
-                responseMultiplier,
-                powerBonus,
-                abilityLevel,
-                powerBoost,
-                damageReduction,
-                weatherEffect
+                myResponseMultiplier,
+                myPowerBonus,
+                myPowerBoost,
+                enemyDamageReduction,
+                myWeatherEffect,
+                myAttackBoost, // 攻击提升
+                0, // 敌方防御降低（暂未实现）
+                0, // 我方攻击降低（暂未实现）
+                enemyDefenseBoost // 敌方防御提升
             );
-            
+
+            // 敌方攻击：使用敌方攻击力、敌方技能的我方防御参数、敌方战斗参数
+            // 根据技能类型选择攻击提升属性
+            let enemyAttackBoost = enemyPhysAtkBoost;
+            if (enemySelectedSkill.type_id === 2) { // 魔攻
+                enemyAttackBoost = enemyMagicAtkBoost;
+            }
+            // 根据技能类型选择我方防御提升属性
+            let myDefenseBoost = myPhysDefBoost;
+            if (enemySelectedSkill.type_id === 2) { // 魔攻
+                myDefenseBoost = myMagicDefBoost;
+            }
             let enemyDamage = await calculateBattleDamage(
-                enemyAttrs.atk,
-                myAttrs.def,
+                enemyBaseAttrs.atk,
+                myBaseAttrs.def,
+                myBaseAttrs.spd,
                 enemySelectedSkill.power,
+                enemySelectedSkill.type_id,
                 enemyWeakness,
-                responseMultiplier,
-                powerBonus,
-                abilityLevel,
-                powerBoost,
-                damageReduction,
-                weatherEffect
+                enemyResponseMultiplier,
+                enemyPowerBonus,
+                enemyPowerBoost,
+                myDamageReduction,
+                enemyWeatherEffect,
+                enemyAttackBoost, // 攻击提升
+                0, // 我方防御降低（暂未实现）
+                0, // 敌方攻击降低（暂未实现）
+                myDefenseBoost // 我方防御提升
             );
             
             // 应用额外连击次数
@@ -868,9 +1050,9 @@
                 enemyDamage = enemyDamage * (enemySelectedSkill.hit_count + enemyExtraCombo);
             }
             
-            // 计算需要的攻击次数
-            const myHitCount = Math.ceil(enemyAttrs.hp / myDamage);
-            const enemyHitCount = Math.ceil(myAttrs.hp / enemyDamage);
+            // 计算需要的攻击次数（使用基础属性中的HP）
+            const myHitCount = Math.ceil(enemyBaseAttrs.hp / myDamage);
+            const enemyHitCount = Math.ceil(myBaseAttrs.hp / enemyDamage);
             
             // 显示结果
             document.getElementById('my-skill-name').textContent = mySelectedSkill.name;
@@ -882,10 +1064,39 @@
             document.getElementById('result').classList.remove('hidden');
         }
         
+        // 全局变量：血量数据
+        let hpData = {
+            my: { current: 0, initial: 0 },
+            enemy: { current: 0, initial: 0 }
+        };
+        
+        // 根据血量百分比获取背景色类名
+        function getHpBarColorClass(current, initial) {
+            if (initial === 0) return 'bg-gray-100';
+            
+            const percentage = current / initial;
+            
+            if (percentage >= 0.6667) {
+                return 'bg-green-100';
+            } else if (percentage > 0.3333) {
+                return 'bg-yellow-100';
+            } else {
+                return 'bg-red-100';
+            }
+        }
+        
         // 显示计算后的属性
         function displayAttributes(side, attrs) {
             const attrDiv = document.getElementById(`${side}-attributes`);
             if (attrDiv) {
+                // 初始化血量数据
+                if (hpData[side].initial === 0) {
+                    hpData[side].initial = attrs.hp;
+                    hpData[side].current = attrs.hp;
+                }
+                
+                const hpBarColorClass = getHpBarColorClass(hpData[side].current, hpData[side].initial);
+                
                 attrDiv.innerHTML = `
                     <div class="grid grid-cols-2 gap-2 mt-2">
                         <div>HP: <span class="font-medium">${attrs.hp}</span></div>
@@ -895,20 +1106,60 @@
                         <div>特防: <span class="font-medium">${attrs.spd}</span></div>
                         <div>速度: <span class="font-medium">${attrs.spe}</span></div>
                     </div>
+                    <div class="mt-3 p-2 border border-gray-300 rounded-md ${hpBarColorClass} text-center transition-colors duration-300">
+                        <span class="font-medium text-gray-800">${hpData[side].current}/${hpData[side].initial}</span>
+                    </div>
                 `;
                 attrDiv.classList.remove('hidden');
             }
         }
         
         // 计算宠物属性
-        function calculatePetAttributes(race, ivs, boost) {
+        function calculatePetAttributes(race, ivs, boostAttr, reductionAttr) {
             const attrs = {};
-            attrs.hp = Math.ceil((1.7 * race.hp + (ivs.hp || 0) * 0.85 * 6 + 70) * (1 + boost) + 100);
-            attrs.atk = Math.ceil((1.1 * race.atk + (ivs.atk || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
-            attrs.def = Math.ceil((1.1 * race.def + (ivs.def || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
-            attrs.spa = Math.ceil((1.1 * race.spa + (ivs.spa || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
-            attrs.spd = Math.ceil((1.1 * race.spd + (ivs.spd || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
-            attrs.spe = Math.ceil((1.1 * race.spe + (ivs.spe || 0) * 0.55 * 6 + 10) * (1 + boost) + 50);
+            
+            // HP calculation
+            let hpBoost = 0;
+            let hpReduction = 0;
+            if (boostAttr === 'hp') hpBoost = 0.2;
+            if (reductionAttr === 'hp') hpReduction = 0.1;
+            attrs.hp = Math.ceil((1.7 * race.hp + (ivs.hp || 0) * 0.85 * 6 + 70) * (1 + hpBoost - hpReduction) + 100);
+            
+            // Attack calculation
+            let atkBoost = 0;
+            let atkReduction = 0;
+            if (boostAttr === 'atk') atkBoost = 0.2;
+            if (reductionAttr === 'atk') atkReduction = 0.1;
+            attrs.atk = Math.ceil((1.1 * race.atk + (ivs.atk || 0) * 0.55 * 6 + 10) * (1 + atkBoost - atkReduction) + 50);
+            
+            // Defense calculation
+            let defBoost = 0;
+            let defReduction = 0;
+            if (boostAttr === 'def') defBoost = 0.2;
+            if (reductionAttr === 'def') defReduction = 0.1;
+            attrs.def = Math.ceil((1.1 * race.def + (ivs.def || 0) * 0.55 * 6 + 10) * (1 + defBoost - defReduction) + 50);
+            
+            // Special Attack calculation
+            let spaBoost = 0;
+            let spaReduction = 0;
+            if (boostAttr === 'spa') spaBoost = 0.2;
+            if (reductionAttr === 'spa') spaReduction = 0.1;
+            attrs.spa = Math.ceil((1.1 * race.spa + (ivs.spa || 0) * 0.55 * 6 + 10) * (1 + spaBoost - spaReduction) + 50);
+            
+            // Special Defense calculation
+            let spdBoost = 0;
+            let spdReduction = 0;
+            if (boostAttr === 'spd') spdBoost = 0.2;
+            if (reductionAttr === 'spd') spdReduction = 0.1;
+            attrs.spd = Math.ceil((1.1 * race.spd + (ivs.spd || 0) * 0.55 * 6 + 10) * (1 + spdBoost - spdReduction) + 50);
+            
+            // Speed calculation
+            let speBoost = 0;
+            let speReduction = 0;
+            if (boostAttr === 'spe') speBoost = 0.2;
+            if (reductionAttr === 'spe') speReduction = 0.1;
+            attrs.spe = Math.ceil((1.1 * race.spe + (ivs.spe || 0) * 0.55 * 6 + 10) * (1 + speBoost - speReduction) + 50);
+            
             return attrs;
         }
         
@@ -934,7 +1185,7 @@
         }
         
         // 计算战斗伤害
-        function calculateBattleDamage(attackerAtk, defenderDef, skillPower, weaknessMultiplier, responseMultiplier, powerBonus, abilityLevel, powerBoost, damageReduction, weatherEffect) {
+        function calculateBattleDamage(attackerAtk, defenderDef, defenderSpd, skillPower, skillType, weaknessMultiplier, responseMultiplier, powerBonus, powerBoost, damageReduction, weatherEffect, attackBoost=0, defenseReduction=0, attackReduction=0, defenseBoost=0) {
             return new Promise((resolve) => {
                 fetch('/api/calculate/damage', {
                     method: 'POST',
@@ -944,14 +1195,19 @@
                     body: JSON.stringify({
                         attacker_atk: attackerAtk,
                         defender_def: defenderDef,
+                        defender_spd: defenderSpd,
                         skill_power: skillPower,
+                        skill_type: skillType,
                         weakness_multiplier: weaknessMultiplier,
                         response_multiplier: responseMultiplier,
                         power_bonus: powerBonus,
-                        ability_level: abilityLevel,
                         power_boost: powerBoost,
                         damage_reduction: damageReduction,
-                        weather_effect: weatherEffect
+                        weather_effect: weatherEffect,
+                        attack_boost: attackBoost,
+                        defense_reduction: defenseReduction,
+                        attack_reduction: attackReduction,
+                        defense_boost: defenseBoost
                     })
                 })
                 .then(response => response.json())
@@ -1143,17 +1399,55 @@
             // 计算我方属性
             if (myPet) {
                 const myIv = getIvObject('my');
-                const myBoost = parseFloat(document.getElementById('my-boost').value) || 0;
-                const myAttrs = calculatePetAttributes(myPet.race, myIv, myBoost);
-                displayAttributes('my', myAttrs);
+                const myBoostAttr = document.getElementById('my-boost').value;
+                const myReductionAttr = document.getElementById('my-reduction').value;
+                const myBaseAttrs = calculatePetAttributes(myPet.race, myIv, myBoostAttr, myReductionAttr);
+
+                // 获取能力等级百分比
+                const myPhysAtkBoost = parseFloat(document.getElementById('my-phys-atk-boost').value) || 0;
+                const myMagicAtkBoost = parseFloat(document.getElementById('my-magic-atk-boost').value) || 0;
+                const myPhysDefBoost = parseFloat(document.getElementById('my-phys-def-boost').value) || 0;
+                const myMagicDefBoost = parseFloat(document.getElementById('my-magic-def-boost').value) || 0;
+                const mySpeedBoost = parseFloat(document.getElementById('my-speed-boost').value) || 0;
+
+                // 计算最终显示属性（应用能力等级百分比）
+                const myDisplayAttrs = {
+                    hp: myBaseAttrs.hp,
+                    atk: Math.ceil(myBaseAttrs.atk * (1 + myPhysAtkBoost)),
+                    def: Math.ceil(myBaseAttrs.def * (1 + myPhysDefBoost)),
+                    spa: Math.ceil(myBaseAttrs.spa * (1 + myMagicAtkBoost)),
+                    spd: Math.ceil(myBaseAttrs.spd * (1 + myMagicDefBoost)),
+                    spe: Math.ceil(myBaseAttrs.spe * (1 + mySpeedBoost))
+                };
+
+                displayAttributes('my', myDisplayAttrs);
             }
-            
+
             // 计算敌方属性
             if (enemyPet) {
                 const enemyIv = getIvObject('enemy');
-                const enemyBoost = parseFloat(document.getElementById('enemy-boost').value) || 0;
-                const enemyAttrs = calculatePetAttributes(enemyPet.race, enemyIv, enemyBoost);
-                displayAttributes('enemy', enemyAttrs);
+                const enemyBoostAttr = document.getElementById('enemy-boost').value;
+                const enemyReductionAttr = document.getElementById('enemy-reduction').value;
+                const enemyBaseAttrs = calculatePetAttributes(enemyPet.race, enemyIv, enemyBoostAttr, enemyReductionAttr);
+
+                // 获取能力等级百分比
+                const enemyPhysAtkBoost = parseFloat(document.getElementById('enemy-phys-atk-boost').value) || 0;
+                const enemyMagicAtkBoost = parseFloat(document.getElementById('enemy-magic-atk-boost').value) || 0;
+                const enemyPhysDefBoost = parseFloat(document.getElementById('enemy-phys-def-boost').value) || 0;
+                const enemyMagicDefBoost = parseFloat(document.getElementById('enemy-magic-def-boost').value) || 0;
+                const enemySpeedBoost = parseFloat(document.getElementById('enemy-speed-boost').value) || 0;
+
+                // 计算最终显示属性（应用能力等级百分比）
+                const enemyDisplayAttrs = {
+                    hp: enemyBaseAttrs.hp,
+                    atk: Math.ceil(enemyBaseAttrs.atk * (1 + enemyPhysAtkBoost)),
+                    def: Math.ceil(enemyBaseAttrs.def * (1 + enemyPhysDefBoost)),
+                    spa: Math.ceil(enemyBaseAttrs.spa * (1 + enemyMagicAtkBoost)),
+                    spd: Math.ceil(enemyBaseAttrs.spd * (1 + enemyMagicDefBoost)),
+                    spe: Math.ceil(enemyBaseAttrs.spe * (1 + enemySpeedBoost))
+                };
+
+                displayAttributes('enemy', enemyDisplayAttrs);
             }
         }
         
@@ -1380,6 +1674,9 @@
         function selectPet(pet, side) {
             if (side === 'my') {
                 myPet = pet;
+                // 重置我方血量数据
+                hpData.my.current = 0;
+                hpData.my.initial = 0;
                 openSkillConfigModal(pet, 'my');
                 // 重新加载敌方技能以更新箭头
                 if (enemyPet) {
@@ -1387,6 +1684,9 @@
                 }
             } else {
                 enemyPet = pet;
+                // 重置敌方血量数据
+                hpData.enemy.current = 0;
+                hpData.enemy.initial = 0;
                 openSkillConfigModal(pet, 'enemy');
                 // 重新加载我方技能以更新箭头
                 if (myPet) {
