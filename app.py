@@ -3,35 +3,56 @@ from flask_cors import CORS
 import json
 import os
 import math
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 app = Flask(__name__)
 CORS(app)
+
+# 数据缓存
+weakness_data = None
+pets = []
+skills = {}
 
 # 加载属性克制数据
 def load_weakness_table():
     with open("attr/attr_map.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-# 加载宠物数据
+# 加载宠物数据 - 扫描pet目录下所有子目录
 def load_pets():
+    global pets
     pets = []
-    pet_dir = "pet/1-10"
-    for filename in os.listdir(pet_dir):
-        if filename.endswith(".json"):
-            with open(os.path.join(pet_dir, filename), "r", encoding="utf-8") as f:
-                pet = json.load(f)
-                pets.append(pet)
+    pet_dir = "pet"
+    if not os.path.exists(pet_dir):
+        return pets
+    for root, dirs, files in os.walk(pet_dir):
+        for filename in files:
+            if filename.endswith(".json"):
+                try:
+                    with open(os.path.join(root, filename), "r", encoding="utf-8") as f:
+                        pet = json.load(f)
+                        pets.append(pet)
+                except Exception as e:
+                    print(f"Error loading pet file {filename}: {e}")
     return pets
 
-# 加载技能数据
+# 加载技能数据 - 扫描petskill目录下所有子目录
 def load_skills():
+    global skills
     skills = {}
-    for root, dirs, files in os.walk("petskill"):
+    petskill_dir = "petskill"
+    if not os.path.exists(petskill_dir):
+        return skills
+    for root, dirs, files in os.walk(petskill_dir):
         for filename in files:
             if filename.endswith(".json") and filename != "skill_types.json":
-                with open(os.path.join(root, filename), "r", encoding="utf-8") as f:
-                    skill = json.load(f)
-                    skills[skill["skill_id"]] = skill
+                try:
+                    with open(os.path.join(root, filename), "r", encoding="utf-8") as f:
+                        skill = json.load(f)
+                        skills[skill["skill_id"]] = skill
+                except Exception as e:
+                    print(f"Error loading skill file {filename}: {e}")
     return skills
 
 # 单属性伤害倍率计算
@@ -96,6 +117,65 @@ def calculate_ability_level(attack_boost, defense_reduction, attack_reduction, d
 weakness_data = load_weakness_table()
 pets = load_pets()
 skills = load_skills()
+
+# 数据文件监听处理器
+class DataFileHandler(FileSystemEventHandler):
+    def on_created(self, event):
+        if event.is_directory:
+            return
+        if event.src_path.endswith('.json'):
+            print(f"检测到新文件: {event.src_path}")
+            self.reload_data(event.src_path)
+    
+    def on_deleted(self, event):
+        if event.is_directory:
+            return
+        if event.src_path.endswith('.json'):
+            print(f"检测到文件删除: {event.src_path}")
+            self.reload_data(event.src_path)
+    
+    def on_modified(self, event):
+        if event.is_directory:
+            return
+        if event.src_path.endswith('.json'):
+            print(f"检测到文件修改: {event.src_path}")
+            self.reload_data(event.src_path)
+    
+    def on_moved(self, event):
+        if event.is_directory:
+            return
+        if event.src_path.endswith('.json') or event.dest_path.endswith('.json'):
+            print(f"检测到文件移动: {event.src_path} -> {event.dest_path}")
+            self.reload_data(event.dest_path)
+    
+    def reload_data(self, file_path):
+        global pets, skills
+        if 'petskill' in file_path:
+            print("重新加载技能数据...")
+            load_skills()
+        elif 'pet' in file_path:
+            print("重新加载宠物数据...")
+            load_pets()
+
+# 启动文件监听器
+def start_file_watcher():
+    observer = Observer()
+    event_handler = DataFileHandler()
+    
+    # 监听宠物目录
+    pet_dir = os.path.abspath("pet")
+    if os.path.exists(pet_dir):
+        observer.schedule(event_handler, pet_dir, recursive=True)
+        print(f"开始监听宠物目录: {pet_dir}")
+    
+    # 监听技能目录
+    petskill_dir = os.path.abspath("petskill")
+    if os.path.exists(petskill_dir):
+        observer.schedule(event_handler, petskill_dir, recursive=True)
+        print(f"开始监听技能目录: {petskill_dir}")
+    
+    observer.start()
+    return observer
 
 # API路由
 
@@ -196,4 +276,10 @@ def index():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5011)
+    observer = start_file_watcher()
+    try:
+        app.run(debug=True, port=5011)
+    except KeyboardInterrupt:
+        print("停止文件监听器...")
+        observer.stop()
+    observer.join()
