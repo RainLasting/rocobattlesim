@@ -11,6 +11,9 @@ function setupEventListeners() {
     // 下一回合按钮
     document.getElementById('next-turn-btn').addEventListener('click', handleNextTurn);
     
+    // 重置血量按钮
+    document.getElementById('reset-hp-btn').addEventListener('click', handleResetHp);
+    
     // 实时计算事件监听器
     // 我方个体值相关
     document.getElementById('my-iv-attr1').addEventListener('change', function() { updateIvAttributeOptions(); calculateRealTimeAttributes(); });
@@ -74,6 +77,16 @@ function handleNextTurn() {
     // 更新血量
     hpData.enemy.current = Math.max(0, hpData.enemy.current - myDamage);
     hpData.my.current = Math.max(0, hpData.my.current - enemyDamage);
+    
+    // 重新计算并显示属性
+    calculateRealTimeAttributes();
+}
+
+// 重置血量按钮点击事件
+function handleResetHp() {
+    // 将血量重置为初始值
+    hpData.my.current = hpData.my.initial;
+    hpData.enemy.current = hpData.enemy.initial;
     
     // 重新计算并显示属性
     calculateRealTimeAttributes();
